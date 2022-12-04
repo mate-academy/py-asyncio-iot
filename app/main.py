@@ -1,7 +1,11 @@
 import asyncio
 import time
 
-from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
+from iot.devices import (
+    HueLightDevice,
+    SmartSpeakerDevice,
+    SmartToiletDevice,
+)
 from iot.message import Message, MessageType
 from iot.service import IOTService
 from typing import Any, Awaitable
