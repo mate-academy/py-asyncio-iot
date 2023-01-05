@@ -1,8 +1,11 @@
 import random
 import string
+import asyncio
 from typing import Protocol
 
 from .message import Message, MessageType
+from typing import Awaitable, Any
+
 
 
 def generate_id(length: int = 8) -> str:
@@ -12,13 +15,13 @@ def generate_id(length: int = 8) -> str:
 # Protocol is very similar to ABC, but uses duck typing
 # so devices should not inherit for it (if it walks like a duck, and quacks like a duck, it's a duck)
 class Device(Protocol):
-    def connect(self) -> None:
+    async def connect(self) -> None:
         ...  # Ellipsis - similar to "pass", but sometimes has different meaning
 
-    def disconnect(self) -> None:
+    async def disconnect(self) -> None:
         ...
 
-    def send_message(self, message_type: MessageType, data: str) -> None:
+    async def send_message(self, message_type: MessageType, data: str) -> None:
         ...
 
 
@@ -26,24 +29,39 @@ class IOTService:
     def __init__(self):
         self.devices: dict[str, Device] = {}
 
-    def register_device(self, device: Device) -> str:
-        device.connect()
+    async def register_device(self, device: Device) -> str:
+        await device.connect()
         device_id = generate_id()
         self.devices[device_id] = device
         return device_id
 
-    def unregister_device(self, device_id: str) -> None:
-        self.devices[device_id].disconnect()
+    async def unregister_device(self, device_id: str) -> None:
+        await self.devices[device_id].disconnect()
         del self.devices[device_id]
 
     def get_device(self, device_id: str) -> Device:
         return self.devices[device_id]
 
-    def run_program(self, program: list[Message]) -> None:
+    async def run_program(self, program: list[Message]) -> None:
         print("=====RUNNING PROGRAM======")
+
+        separated_program = {msg.device_id: [] for msg in program}
         for msg in program:
-            self.send_msg(msg)
+            separated_program[msg.device_id].append(msg)
+
+        coroutines = [
+            self.run_sequence(*messages)
+            for messages in separated_program.values()
+        ]
+        await asyncio.gather(*coroutines)
+
         print("=====END OF PROGRAM======")
 
-    def send_msg(self, msg: Message) -> None:
-        self.devices[msg.device_id].send_message(msg.msg_type, msg.data)
+    async def send_msg(self, msg: Message) -> None:
+        await self.devices[msg.device_id].send_message(msg.msg_type, msg.data)
+
+    async def run_sequence(self, *messages: Message) -> None:
+        for message in messages:
+            await self.send_msg(message)
+
+
