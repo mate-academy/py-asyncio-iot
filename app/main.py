@@ -30,13 +30,7 @@ async def main() -> None:
         ]
     )
 
-    wake_up_program = [
-        Message(res[0], MessageType.SWITCH_ON),
-        Message(res[1], MessageType.SWITCH_ON),
-        Message(res[1], MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
-    ]
-
-    sleep_program = [
+    parallel = [
         Message(res[0], MessageType.SWITCH_OFF),
         Message(res[1], MessageType.SWITCH_OFF),
         Message(res[2], MessageType.FLUSH),
@@ -44,11 +38,30 @@ async def main() -> None:
     ]
 
     # run the programs
-    await run_sequence(service.run_program(wake_up_program))
     await run_parallel(
-        * [
+        *[
             service.run_program([message])
-            for message in sleep_program
+            for message in [
+                Message(res[0], MessageType.SWITCH_ON),
+                Message(res[1], MessageType.SWITCH_ON),
+            ]
+        ]
+    )
+    await run_sequence(
+        service.run_program(
+            [
+                Message(
+                    res[1],
+                    MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"
+                ),
+
+            ]
+        )
+    )
+    await run_parallel(
+        *[
+            service.run_program([message])
+            for message in parallel
         ]
     )
 
