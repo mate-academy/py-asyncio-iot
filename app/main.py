@@ -8,12 +8,16 @@ from iot.service import IOTService
 
 
 async def run_sequence(*functions: Awaitable[Any]) -> None:
+    print("=====RUNNING PROGRAM======")
     for function in functions:
         await function
+    print("=====END OF PROGRAM======")
 
 
 async def run_parallel(*functions: Awaitable[Any]) -> None:
+    print("=====RUNNING PROGRAM======")
     await asyncio.gather(*functions)
+    print("=====END OF PROGRAM======")
 
 
 async def main() -> None:
@@ -29,21 +33,27 @@ async def main() -> None:
     toilet_id = service.register_device(toilet)
     await asyncio.gather(*[hue_light_id, speaker_id, toilet_id])
 
-    wake_up = [
+    parallel_on = [
         hue_light.send_message(MessageType.SWITCH_ON),
         speaker.send_message(MessageType.SWITCH_ON),
-        speaker.send_message(MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
     ]
 
-    sleep = [
-        hue_light.send_message(MessageType.SWITCH_OFF),
-        speaker.send_message(MessageType.SWITCH_OFF),
+    sequence_commands = [
+        speaker.send_message(MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
         toilet.send_message(MessageType.FLUSH),
         toilet.send_message(MessageType.CLEAN),
     ]
 
-    await run_sequence(*wake_up)
-    await run_sequence(*sleep)
+    parallel_off = [
+        hue_light.send_message(MessageType.SWITCH_OFF),
+        speaker.send_message(MessageType.SWITCH_OFF),
+    ]
+
+    await run_parallel(*parallel_on)
+
+    await run_sequence(*sequence_commands)
+
+    await run_parallel(*parallel_off)
 
 
 if __name__ == "__main__":
