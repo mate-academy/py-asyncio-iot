@@ -21,7 +21,7 @@ async def main() -> None:
     service = IOTService()
 
     # register a few devices
-    res = await asyncio.gather(
+    hue_light_id, speaker_id, toilet_id = await asyncio.gather(
         * [
             service.register_device(device)
             for device in (
@@ -31,10 +31,10 @@ async def main() -> None:
     )
 
     parallel = [
-        Message(res[0], MessageType.SWITCH_OFF),
-        Message(res[1], MessageType.SWITCH_OFF),
-        Message(res[2], MessageType.FLUSH),
-        Message(res[2], MessageType.CLEAN),
+        Message(hue_light_id, MessageType.SWITCH_OFF),
+        Message(speaker_id, MessageType.SWITCH_OFF),
+        Message(toilet_id, MessageType.FLUSH),
+        Message(toilet_id, MessageType.CLEAN),
     ]
 
     # run the programs
@@ -42,8 +42,8 @@ async def main() -> None:
         *[
             service.run_program([message])
             for message in [
-                Message(res[0], MessageType.SWITCH_ON),
-                Message(res[1], MessageType.SWITCH_ON),
+                Message(hue_light_id, MessageType.SWITCH_ON),
+                Message(speaker_id, MessageType.SWITCH_ON),
             ]
         ]
     )
@@ -51,7 +51,7 @@ async def main() -> None:
         service.run_program(
             [
                 Message(
-                    res[1],
+                    speaker_id,
                     MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"
                 ),
 
