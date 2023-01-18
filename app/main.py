@@ -23,6 +23,10 @@ async def main() -> None:
         ]
     )
 
+    async def run_sequence(*functions: Awaitable[Any]) -> None:
+        for function in functions:
+            await function
+
     async def run_parallel(*functions: Awaitable[Any]) -> None:
         await asyncio.gather(*functions)
 
@@ -38,26 +42,29 @@ async def main() -> None:
             )
         ),
     )
-    await run_parallel(
-        service.send_msg(Message(devices_id[2], MessageType.FLUSH)),
-        service.send_msg(
-            Message(
-                devices_id[0],
-                MessageType.CHANGE_COLOR,
-                "Colour change to Green",
-            )
+
+    await run_sequence(
+        run_parallel(
+            service.send_msg(Message(devices_id[2], MessageType.FLUSH)),
+            service.send_msg(
+                Message(
+                    devices_id[0],
+                    MessageType.CHANGE_COLOR,
+                    "Colour change to Green",
+                )
+            ),
+            service.send_msg(Message(devices_id[2], MessageType.CLEAN)),
         ),
-        service.send_msg(Message(devices_id[2], MessageType.CLEAN)),
-    )
-    await run_parallel(
-        service.send_msg(Message(devices_id[0], MessageType.SWITCH_OFF)),
-        service.send_msg(Message(devices_id[1], MessageType.SWITCH_OFF)),
-        service.send_msg(Message(devices_id[2], MessageType.CLOSE)),
-    )
-    await run_parallel(
-        service.unregister_device(devices_id[0]),
-        service.unregister_device(devices_id[1]),
-        service.unregister_device(devices_id[2]),
+        run_sequence(
+            service.send_msg(Message(devices_id[0], MessageType.SWITCH_OFF)),
+            service.send_msg(Message(devices_id[1], MessageType.SWITCH_OFF)),
+            service.send_msg(Message(devices_id[2], MessageType.CLOSE)),
+            run_parallel(
+                service.unregister_device(devices_id[0]),
+                service.unregister_device(devices_id[1]),
+                service.unregister_device(devices_id[2]),
+            )
+        )
     )
 
 
