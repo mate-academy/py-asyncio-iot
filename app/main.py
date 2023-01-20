@@ -3,21 +3,17 @@ import time
 from typing import Awaitable, Any
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
-from iot.message import Message, MessageType
+from iot.message import MessageType
 from iot.service import IOTService
 
 
 async def run_sequence(*functions: Awaitable[Any]) -> None:
-    print("=====RUNNING PROGRAM======")
     for function in functions:
         await function
-    print("=====END OF PROGRAM======")
 
 
 async def run_parallel(*functions: Awaitable[Any]) -> None:
-    print("=====RUNNING PROGRAM======")
     await asyncio.gather(*functions)
-    print("=====END OF PROGRAM======")
 
 
 async def main() -> None:
@@ -39,7 +35,6 @@ async def main() -> None:
     ]
 
     sequence_commands = [
-        speaker.send_message(MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
         toilet.send_message(MessageType.FLUSH),
         toilet.send_message(MessageType.CLEAN),
     ]
@@ -49,11 +44,19 @@ async def main() -> None:
         speaker.send_message(MessageType.SWITCH_OFF),
     ]
 
-    await run_parallel(*parallel_on)
+    wake_up = [
+        print("=====RUNNING PROGRAM======"),
+        await run_parallel(*parallel_on),
+        await speaker.send_message(MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
+        print("=====END OF PROGRAM======"),
+    ]
 
-    await run_sequence(*sequence_commands)
-
-    await run_parallel(*parallel_off)
+    sleep = [
+        print("=====RUNNING PROGRAM======"),
+        await run_parallel(*parallel_off),
+        await run_sequence(*sequence_commands),
+        print("=====END OF PROGRAM======"),
+    ]
 
 
 if __name__ == "__main__":

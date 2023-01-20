@@ -1,7 +1,6 @@
-import asyncio
 import random
 import string
-from typing import Protocol, Coroutine, Awaitable, Any
+from typing import Protocol
 
 from .message import Message, MessageType
 
@@ -40,9 +39,10 @@ class IOTService:
     def get_device(self, device_id: str) -> Device:
         return self.devices[device_id]
 
-    async def run_program(self, program: list[Awaitable[Any]]) -> None:
+    async def run_program(self, program: list) -> None:
         print("=====RUNNING PROGRAM======")
-        await asyncio.gather(*[method for method in program])
+        for msg in program:
+            await self.send_msg(msg)
         print("=====END OF PROGRAM======")
 
     async def send_msg(self, msg: Message) -> None:
