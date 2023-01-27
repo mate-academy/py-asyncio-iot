@@ -1,7 +1,7 @@
 import asyncio
 import time
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
-from iot.message import MessageType
+from iot.message import Message, MessageType
 from iot.service import IOTService
 
 from typing import Awaitable, Any
@@ -24,38 +24,40 @@ async def main() -> None:
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
+    hue_light_id = await asyncio.create_task(service.register_device(hue_light))
+    speaker_id = await asyncio.create_task(service.register_device(speaker))
+    toilet_id = await asyncio.create_task(service.register_device(toilet))
 
-    hue_light_id = service.register_device(hue_light)
-    speaker_id = service.register_device(speaker)
-    toilet_id = service.register_device(toilet)
-    await asyncio.gather(*[hue_light_id, speaker_id, toilet_id])
+    await run_parallel(
+        service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
+        service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
+        run_sequence(
+            service.send_msg(Message(toilet_id, MessageType.FLUSH)),
+            service.send_msg(Message(toilet_id, MessageType.CLEAN)),
+        ),
+    )
+    await run_parallel(
+        service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
+        run_sequence(
+            service.run_program([
+                Message(speaker_id, MessageType.SWITCH_ON),
+                Message(
+                    speaker_id,
+                    MessageType.PLAY_SONG,
+                    "Rick Astley - Never Gonna Give You Up"
+                ),
+            ]
+            ),
+        ))
 
-    parallel_on = [
-        hue_light.send_message(MessageType.SWITCH_ON),
-        speaker.send_message(MessageType.SWITCH_ON),
-        ]
-    sequence_commands = [
-        toilet.send_message(MessageType.FLUSH),
-        toilet.send_message(MessageType.CLEAN),
-        ]
-    parallel_off = [
-        hue_light.send_message(MessageType.SWITCH_OFF),
-        speaker.send_message(MessageType.SWITCH_OFF),
-    ]
-
-    wake_up = [
-        print("=====RUNNING PROGRAM======"),
-        await run_parallel(*parallel_on),
-        await speaker.send_message(MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
-        print("=====END OF PROGRAM======"),
-    ]
-
-    sleep = [
-        print("=====RUNNING PROGRAM======"),
-        await run_parallel(*parallel_off),
-        await run_sequence(*sequence_commands),
-        print("=====END OF PROGRAM======"),
-    ]
+    await run_parallel(
+        service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
+        service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
+        run_sequence(
+            service.send_msg(Message(toilet_id, MessageType.FLUSH)),
+            service.send_msg(Message(toilet_id, MessageType.CLEAN)),
+        ),
+    )
 
 
 if __name__ == "__main__":
