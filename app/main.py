@@ -1,44 +1,49 @@
+import asyncio
 import time
+from typing import Any, Awaitable
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
-from iot.message import Message, MessageType
-from iot.service import IOTService
+from iot.message import MessageType
 
 
-def main() -> None:
-    # create an IOT service
-    service = IOTService()
+async def main() -> None:
 
     # create and register a few devices
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
-    hue_light_id = service.register_device(hue_light)
-    speaker_id = service.register_device(speaker)
-    toilet_id = service.register_device(toilet)
+    devices = [hue_light, speaker, toilet]
 
-    # create a few programs
-    wake_up_program = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
-    ]
+    await asyncio.gather(*[device.connect() for device in devices])
 
-    sleep_program = [
-        Message(hue_light_id, MessageType.SWITCH_OFF),
-        Message(speaker_id, MessageType.SWITCH_OFF),
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN),
-    ]
+    async def run_sequence(*functions: Awaitable[Any]) -> None:
+        for function in functions:
+            await function
 
-    # run the programs
-    service.run_program(wake_up_program)
-    service.run_program(sleep_program)
+    async def run_parallel(*functions: Awaitable[Any]) -> None:
+        await asyncio.gather(*functions)
+
+    print("=====RUNNING PROGRAM======")
+    await asyncio.gather(
+        *[run_parallel(device.send_message(MessageType.SWITCH_ON)) for device in (hue_light, speaker)]
+    )
+    await asyncio.gather(
+        run_sequence(speaker.send_message(MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"))
+    )
+    print("=====END OF PROGRAM======")
+    print("=====RUNNING PROGRAM======")
+    await asyncio.gather(
+        *[run_parallel(device.send_message(MessageType.SWITCH_OFF)) for device in (hue_light, speaker)]
+    )
+    await asyncio.gather(
+        *[run_sequence(toilet.send_message(MessageType.FLUSH), toilet.send_message(MessageType.CLEAN))]
+    )
+    print("=====END OF PROGRAM======")
 
 
 if __name__ == "__main__":
     start = time.perf_counter()
-    main()
+    asyncio.run(main())
     end = time.perf_counter()
 
     print("Elapsed:", end - start)
