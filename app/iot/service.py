@@ -1,6 +1,8 @@
 import random
 import string
 from typing import Protocol
+import asyncio
+
 
 from .message import Message, MessageType
 
@@ -10,24 +12,26 @@ def generate_id(length: int = 8) -> str:
 
 
 # Protocol is very similar to ABC, but uses duck typing
-# so devices should not inherit for it (if it walks like a duck, and quacks like a duck, it's a duck)
+# so devices should not inherit for it (if it walks like a duck,
+# and quacks like a duck, it's a duck)
 class Device(Protocol):
-    def connect(self) -> None:
-        ...  # Ellipsis - similar to "pass", but sometimes has different meaning
+    async def connect(self) -> None:
+        ...  # Ellipsis - similar to "pass", but sometimes
+        # has different meaning
 
-    def disconnect(self) -> None:
+    async def disconnect(self) -> None:
         ...
 
-    def send_message(self, message_type: MessageType, data: str) -> None:
+    async def send_message(self, message_type: MessageType, data: str) -> None:
         ...
 
 
 class IOTService:
-    def __init__(self):
+    def __init__(self) -> None:
         self.devices: dict[str, Device] = {}
 
-    def register_device(self, device: Device) -> str:
-        device.connect()
+    async def register_device(self, device: Device) -> str:
+        # await device.connect()
         device_id = generate_id()
         self.devices[device_id] = device
         return device_id
@@ -39,10 +43,13 @@ class IOTService:
     def get_device(self, device_id: str) -> Device:
         return self.devices[device_id]
 
-    def run_program(self, program: list[Message]) -> None:
+    async def run_program(self, program: list[Message]) -> None:
         print("=====RUNNING PROGRAM======")
-        for msg in program:
-            self.send_msg(msg)
+        # for msg in program:
+        #     self.send_msg(msg)
+        await asyncio.gather(*(device.send_message(message.message_type,
+                                                   message.data)
+                               for device, message in program))
         print("=====END OF PROGRAM======")
 
     def send_msg(self, msg: Message) -> None:
