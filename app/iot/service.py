@@ -45,18 +45,6 @@ class IOTService:
 
     async def run_program(self, program: list[Tuple[Device, Message]]) -> None:
         print("=====RUNNING PROGRAM======")
-        # await asyncio.gather(*(device.send_message(message.message_type,
-        #                                            message.data)
-        #                        for device, message in program))
-        # print("=====END OF PROGRAM======")
-        # try:
-        #     await asyncio.gather(
-        #         *(device.send_message(message.message_type, message.data)
-        #         for device, message in program))
-        # except Exception as e:
-        #     print(f"An error occurred during program execution: {e}")
-        # else:
-        #     print("=====END OF PROGRAM======")
         messages = [(self.get_device(msg.device_id), msg) for msg in program]
         try:
             await asyncio.gather(
