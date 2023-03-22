@@ -1,15 +1,24 @@
+import asyncio
 import time
+from typing import Awaitable, Any
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
 from iot.service import IOTService
 
 
-def main() -> None:
-    # create an IOT service
+async def run_parallel(*functions: Awaitable[Any]) -> None:
+    await asyncio.gather(*functions)
+
+
+async def run_sequence(*functions: Awaitable[Any]) -> None:
+    for function in functions:
+        await function
+
+
+async def main() -> None:
     service = IOTService()
 
-    # create and register a few devices
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
@@ -17,28 +26,56 @@ def main() -> None:
     speaker_id = service.register_device(speaker)
     toilet_id = service.register_device(toilet)
 
-    # create a few programs
-    wake_up_program = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
+    speaker_wake_up_program = [
         Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
+        Message(
+            speaker_id,
+            MessageType.PLAY_SONG,
+            "Rick Astley - Never Gonna Give You Up"
+        ),
     ]
 
-    sleep_program = [
+    hue_light_sleep_program = [
         Message(hue_light_id, MessageType.SWITCH_OFF),
+    ]
+
+    speaker_sleep_program = [
         Message(speaker_id, MessageType.SWITCH_OFF),
+    ]
+
+    hue_light_wake_up_program = [
+        Message(hue_light_id, MessageType.SWITCH_ON),
+    ]
+
+    toilet_sleep_program = [
         Message(toilet_id, MessageType.FLUSH),
         Message(toilet_id, MessageType.CLEAN),
     ]
 
-    # run the programs
-    service.run_program(wake_up_program)
-    service.run_program(sleep_program)
+    print("WAKE UP PROGRAM")
+    await run_parallel(
+        run_sequence(
+            speaker.connect(),
+            service.device_operation(speaker_wake_up_program),
+        ),
+        run_sequence(
+            hue_light.connect(),
+            service.device_operation(hue_light_wake_up_program),
+        ),
+        toilet.connect()
+    )
+    print(f"{'-'* 10}")
+    print("SLEEP PROGRAM")
+    await run_parallel(
+        service.device_operation(toilet_sleep_program),
+        service.device_operation(speaker_sleep_program),
+        service.device_operation(hue_light_sleep_program)
+    )
 
 
 if __name__ == "__main__":
     start = time.perf_counter()
-    main()
+    asyncio.run(main())
     end = time.perf_counter()
 
     print("Elapsed:", end - start)
