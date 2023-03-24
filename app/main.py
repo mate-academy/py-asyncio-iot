@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import Any, Coroutine
+from typing import Any, Awaitable
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
@@ -19,7 +19,7 @@ async def main() -> None:
     speaker_id = await service.register_device(speaker)
     toilet_id = await service.register_device(toilet)
 
-    async def run_coroutines(*coroutines: Coroutine[Any]) -> None:
+    async def run_coroutines(*coroutines: Awaitable[Any]) -> None:
         tasks = [asyncio.create_task(coro) for coro in coroutines]
         await asyncio.gather(*tasks)
 
