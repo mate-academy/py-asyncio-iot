@@ -8,6 +8,13 @@ from iot.service import IOTService
 
 
 async def main() -> None:
+    async def run_sequence(*functions: Awaitable[Any]) -> None:
+        for function in functions:
+            await function
+
+    async def run_parallel(*functions: Awaitable[Any]) -> None:
+        await asyncio.gather(*functions)
+
     # create an IOT service
     service = IOTService()
 
@@ -15,16 +22,19 @@ async def main() -> None:
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
-    hue_light_id, speaker_id, toilet_id = await asyncio.gather(
-        *(service.register_device(device) for device in [hue_light, speaker, toilet])
+
+    await run_parallel(*[
+        service.register_device(hue_light),
+        service.register_device(speaker),
+        service.register_device(toilet),
+    ])
+
+    hue_light_id, speaker_id, toilet_id = sum(
+        [
+            [id_ for id_ in service.devices if service.devices[id_] == device]
+            for device in [hue_light, speaker, toilet]
+        ], []
     )
-
-    async def run_sequence(*functions: Awaitable[Any]) -> None:
-        for function in functions:
-            await function
-
-    async def run_parallel(*functions: Awaitable[Any]) -> None:
-        await asyncio.gather(*functions)
 
     # wake_up_program
     await run_parallel(*[
