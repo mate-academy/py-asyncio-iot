@@ -47,3 +47,6 @@ class IOTService:
 
     def send_msg(self, msg: Message) -> None:
         self.devices[msg.device_id].send_message(msg.msg_type, msg.data)
+
+
+# стартовая скорость 5 сек, в синхронном исполнении
