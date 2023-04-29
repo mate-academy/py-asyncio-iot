@@ -26,8 +26,8 @@ class IOTService:
     def __init__(self):
         self.devices: dict[str, Device] = {}
 
-    def register_device(self, device: Device) -> str:
-        device.connect()
+    async def register_device(self, device: Device) -> str:
+        await device.connect()
         device_id = generate_id()
         self.devices[device_id] = device
         return device_id

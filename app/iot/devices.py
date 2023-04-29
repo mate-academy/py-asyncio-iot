@@ -1,3 +1,4 @@
+import asyncio
 import time
 
 from .message import MessageType
@@ -8,9 +9,9 @@ TIME_TO_SLEEP = 0.5
 
 # of course this code looks dumb, but imagine some real implementations of each method here
 class HueLightDevice:
-    def connect(self) -> None:
+    async def connect(self) -> None:
         print("Connecting Hue Light.")
-        time.sleep(TIME_TO_SLEEP)
+        await asyncio.sleep(TIME_TO_SLEEP)
         print("Hue Light connected.")
 
     def disconnect(self) -> None:
@@ -27,9 +28,9 @@ class HueLightDevice:
 
 
 class SmartSpeakerDevice:
-    def connect(self) -> None:
+    async def connect(self) -> None:
         print("Connecting to Smart Speaker.")
-        time.sleep(TIME_TO_SLEEP)
+        await asyncio.sleep(TIME_TO_SLEEP)
         print("Smart Speaker connected.")
 
     def disconnect(self) -> None:
@@ -46,9 +47,9 @@ class SmartSpeakerDevice:
 
 
 class SmartToiletDevice:
-    def connect(self) -> None:
+    async def connect(self) -> None:
         print("Connecting to Smart Toilet.")
-        time.sleep(TIME_TO_SLEEP)
+        await asyncio.sleep(TIME_TO_SLEEP)
         print("Smart Toilet connected.")
 
     def disconnect(self) -> None:
