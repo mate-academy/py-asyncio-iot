@@ -28,14 +28,6 @@ async def main() -> None:
     speaker_id = service.register_device(speaker)
     toilet_id = service.register_device(toilet)
 
-# why this variant not working? (question to QnA)
-    # hue_light_id = asyncio.create_task(service.register_device(hue_light))
-    # speaker_id = asyncio.create_task(service.register_device(speaker))
-    # toilet_id = asyncio.create_task(service.register_device(toilet))
-    #
-    # await asyncio.gather(hue_light_id, speaker_id, toilet_id)
-
-
     await run_sequence(
         run_parallel(
             service.connect_device(hue_light),
