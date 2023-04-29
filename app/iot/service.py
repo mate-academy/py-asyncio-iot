@@ -26,11 +26,13 @@ class IOTService:
     def __init__(self):
         self.devices: dict[str, Device] = {}
 
-    async def register_device(self, device: Device) -> str:
-        await device.connect()
+    def register_device(self, device: Device) -> str:
         device_id = generate_id()
         self.devices[device_id] = device
         return device_id
+
+    async def connect_device(self, device: Device) -> None:
+        await device.connect()
 
     async def unregister_device(self, device_id: str) -> None:
         self.devices[device_id].disconnect()
@@ -39,14 +41,5 @@ class IOTService:
     def get_device(self, device_id: str) -> Device:
         return self.devices[device_id]
 
-    # async def run_program(self, program: list[Message]) -> None:
-    #     print("=====RUNNING PROGRAM======")
-    #     for msg in program:
-    #         await self.send_msg(msg)
-    #     print("=====END OF PROGRAM======")
-
     async def send_msg(self, msg: Message) -> None:
         await self.devices[msg.device_id].send_message(msg.msg_type, msg.data)
-
-
-# стартовая скорость 5 сек, в синхронном исполнении
