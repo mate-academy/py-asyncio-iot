@@ -7,6 +7,15 @@ from iot.message import Message, MessageType
 from iot.service import IOTService
 
 
+async def run_sequence(*functions: Awaitable[Any]) -> None:
+    for function in functions:
+        await function
+
+
+async def run_parallel(*functions: Awaitable[Any]) -> None:
+    await asyncio.gather(*functions)
+
+
 async def main() -> None:
     # create an IOT service
     service = IOTService()
@@ -22,22 +31,25 @@ async def main() -> None:
     )
 
     # create a few programs
-    wake_up_program = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
-    ]
-
-    sleep_program = [
-        Message(hue_light_id, MessageType.SWITCH_OFF),
-        Message(speaker_id, MessageType.SWITCH_OFF),
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN),
-    ]
-
-    # run the programs
-    await service.run_program(wake_up_program)
-    await service.run_program(sleep_program)
+    await run_sequence(
+        run_parallel(
+            service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
+            service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
+        ),
+        service.send_msg(
+            Message(
+                speaker_id,
+                MessageType.PLAY_SONG,
+                "Rick Astley - Never Gonna Give You Up",
+            )
+        ),
+        run_parallel(
+            service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
+            service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
+            service.send_msg(Message(toilet_id, MessageType.FLUSH)),
+        ),
+        service.send_msg(Message(toilet_id, MessageType.CLEAN)),
+    )
 
 
 if __name__ == "__main__":
