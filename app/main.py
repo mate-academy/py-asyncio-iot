@@ -39,7 +39,12 @@ async def main() -> None:
 
     await run_sequence(
         service.run_program(wake_up_program),
-        service.run_program(sleep_program)
+        service.run_program(sleep_program),
+    )
+    await asyncio.gather(
+        service.unregister_device(hue_light_id),
+        service.unregister_device(speaker_id),
+        service.unregister_device(toilet_id)
     )
 
 
