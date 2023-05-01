@@ -41,6 +41,11 @@ async def main() -> None:
             Message(toilet_id, MessageType.FLUSH),
             Message(toilet_id, MessageType.CLEAN)])
     )
+    await asyncio.gather(
+        hue_light.disconnect(),
+        speaker.disconnect(),
+        toilet.disconnect(),
+    )
 
 
 if __name__ == "__main__":

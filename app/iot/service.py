@@ -50,7 +50,7 @@ class IOTService:
         print("=====RUNNING PROGRAM======")
         messages = []
         for msg in program:
-            task = asyncio.create_task(self.send_msg(msg))
+            task = self.send_msg(msg)
             messages.append(task)
         await run_parallel(*messages)
         print("=====END OF PROGRAM======")
