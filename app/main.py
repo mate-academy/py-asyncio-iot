@@ -9,16 +9,6 @@ from iot.service import IOTService
 
 from typing import Any, Awaitable
 
-
-async def run_sequence(*functions: Awaitable[Any]) -> None:
-    for function in functions:
-        await function
-
-
-async def run_parallel(*functions: Awaitable[Any]) -> None:
-    await asyncio.gather(*functions)
-
-
 async def main() -> None:
     # create an IOT service
     service = IOTService()
@@ -29,7 +19,6 @@ async def main() -> None:
         service.register_device(SmartSpeakerDevice()),
         service.register_device(SmartToiletDevice()),
     )
-    print(device_ids)
     # create a few programs
     wake_up_program = [
         Message(device_ids[0], MessageType.SWITCH_ON),
@@ -53,7 +42,6 @@ async def main() -> None:
         task = asyncio.create_task(service.send_msg(msg))
         tasks.append(task)
 
-    print(tasks)
     # run the programs
     await asyncio.gather(*tasks)
     tasks = [
