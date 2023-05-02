@@ -66,7 +66,7 @@ async def main() -> None:
                 ]
             )
         ),
-        service.run_program([Message(toilet_id, MessageType.FLUSH)]),
+        service.run_program([Message(toilet_id, MessageType.CLEAN)]),
     )
 
     print("=====END OF PROGRAM======")
