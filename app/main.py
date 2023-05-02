@@ -29,27 +29,35 @@ async def main() -> None:
         service.register_device(toilet),
     )
 
-    await run_sequence(
-        run_parallel(
-            service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
-            service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
-        ),
-        service.send_msg(
-            Message(
-                speaker_id,
-                MessageType.PLAY_SONG,
-                "Rick Astley - Never Gonna Give You Up",
-            )
-        ),
-    )
+    switch_on = Message(hue_light_id, MessageType.SWITCH_ON)
+    speaker_switch_on = Message(speaker_id, MessageType.SWITCH_ON)
 
-    await run_sequence(
-        run_parallel(
-            service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
-            service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
-            service.send_msg((Message(toilet_id, MessageType.FLUSH))),
-        ),
-        service.send_msg((Message(toilet_id, MessageType.CLEAN))),
+    play_song = Message(
+        speaker_id,
+        MessageType.PLAY_SONG,
+        "Rick Astley - Never Gonna Give You Up"
+    )
+    hue_light_switch_off = Message(hue_light_id, MessageType.SWITCH_OFF)
+    speaker_switch_off = Message(speaker_id, MessageType.SWITCH_OFF)
+    toilet_flush = Message(toilet_id, MessageType.FLUSH)
+    toilet_clean = Message(toilet_id, MessageType.CLEAN)
+
+    await run_parallel(
+        service.send_msg(switch_on),
+        service.send_msg(speaker_switch_on)
+    )
+    await run_sequence(service.send_msg(play_song))
+    await run_parallel(
+        service.send_msg(hue_light_switch_off),
+        service.send_msg(speaker_switch_off),
+        service.send_msg(toilet_flush)
+
+    )
+    await run_sequence(service.send_msg(toilet_clean))
+    await run_parallel(
+        service.unregister_device(hue_light_id),
+        service.unregister_device(speaker_id),
+        service.unregister_device(toilet_id)
     )
 
 

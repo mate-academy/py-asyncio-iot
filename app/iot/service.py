@@ -10,11 +10,9 @@ def generate_id(length: int = 8) -> str:
     return "".join(random.choices(string.ascii_uppercase, k=length))
 
 
-# Protocol is very similar to ABC, but uses duck typing
-# so devices should not inherit for it (if it walks like a duck, and quacks like a duck, it's a duck)
 class Device(Protocol):
     def connect(self) -> None:
-        ...  # Ellipsis - similar to "pass", but sometimes has different meaning
+        ...
 
     def disconnect(self) -> None:
         ...
@@ -39,12 +37,6 @@ class IOTService:
 
     def get_device(self, device_id: str) -> Device:
         return self.devices[device_id]
-
-    async def run_program(self, program: list[Message]) -> None:
-        print("=====RUNNING PROGRAM======")
-        tasks = [self.send_msg(msg) for msg in program]
-        await asyncio.gather(*tasks)
-        print("=====END OF PROGRAM======")
 
     async def send_msg(self, msg: Message) -> None:
         await self.devices[msg.device_id].send_message(msg.msg_type, msg.data)
