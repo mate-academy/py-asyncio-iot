@@ -24,10 +24,9 @@ async def main() -> None:
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
-    hue_light_id = service.register_device(hue_light)
-    speaker_id = service.register_device(speaker)
-    toilet_id = service.register_device(toilet)
-    await asyncio.gather(*[hue_light_id, speaker_id, toilet_id])
+    hue_light_id = await service.register_device(hue_light)
+    speaker_id = await service.register_device(speaker)
+    toilet_id = await service.register_device(toilet)
 
     await run_parallel(*[
         service.run_program([Message(hue_light_id, MessageType.SWITCH_ON)]),

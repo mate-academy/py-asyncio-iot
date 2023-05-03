@@ -2,7 +2,7 @@ import asyncio
 import time
 
 from .message import MessageType
-
+from .service import Device
 
 TIME_TO_SLEEP = 0.5
 
