@@ -17,10 +17,8 @@ async def run_parallel(*functions: Awaitable[Any]) -> None:
 
 
 async def main() -> None:
-    # create an IOT service
     service = IOTService()
 
-    # create and register a few devices
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
