@@ -2,7 +2,11 @@ import asyncio
 import time
 from typing import Any, Awaitable
 
-from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
+from app.iot.devices import (
+    HueLightDevice,
+    SmartSpeakerDevice,
+    SmartToiletDevice
+)
 from iot.message import Message, MessageType
 from iot.service import IOTService
 
@@ -18,32 +22,26 @@ async def run_parallel(*functions: Awaitable[Any]) -> None:
 
 async def main() -> None:
     service = IOTService()
+    song_name = "Rick Astley - Never Gonna Give You Up"
 
-    devices = [HueLightDevice(), SmartSpeakerDevice(), SmartToiletDevice()]
-    devices_id = await asyncio.gather(
-        *[service.register_device(device) for device in devices]
-    )
-    hue_light_id, speaker_id, toilet_id = devices_id
+    hue_light = await service.register_device(HueLightDevice())
+    speaker = await service.register_device(SmartSpeakerDevice())
+    toilet = await service.register_device(SmartToiletDevice())
 
-    await run_parallel(
-        service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
-        service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
-        run_sequence(
-            service.send_msg(Message(toilet_id, MessageType.FLUSH)),
-            service.send_msg(Message(toilet_id, MessageType.CLEAN))
-        )
-    )
-    await run_sequence(
-        service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
-        run_parallel(
-            service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
-            service.send_msg(Message(
-                speaker_id,
-                MessageType.PLAY_SONG,
-                "Rick Astley - Never Gonna Give You Up")
-            )
-        )
-    )
+    wake_up_program = [
+        Message(hue_light, MessageType.SWITCH_ON),
+        Message(speaker, MessageType.SWITCH_ON),
+        Message(toilet, MessageType.PLAY_SONG, song_name),
+    ]
+    sleep_program = [
+        Message(hue_light, MessageType.SWITCH_OFF),
+        Message(speaker, MessageType.SWITCH_OFF),
+        Message(toilet, MessageType.FLUSH),
+        Message(toilet, MessageType.CLEAN),
+    ]
+
+    await run_sequence(service.run_program(wake_up_program))
+    await run_parallel(service.run_program(sleep_program))
 
 
 if __name__ == "__main__":
