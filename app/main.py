@@ -12,6 +12,10 @@ async def run_sequence(*functions: Awaitable[Any]) -> None:
         await function
 
 
+async def run_parallel(*functions: Awaitable[Any]) -> None:
+    await asyncio.gather(*functions)
+
+
 async def main() -> None:
     service = IOTService()
 
@@ -21,27 +25,24 @@ async def main() -> None:
         service.register_device(SmartToiletDevice())
     )
 
-    wake_up_program = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.SWITCH_ON),
-        Message(
-            speaker_id,
-            MessageType.PLAY_SONG,
-            "Rick Astley - Never Gonna Give You Up"
-        )
-    ]
-    sleep_program = [
-        Message(hue_light_id, MessageType.SWITCH_OFF),
-        Message(speaker_id, MessageType.SWITCH_OFF),
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN)
-    ]
-
     await run_sequence(
-        service.run_program(wake_up_program),
-        service.run_program(sleep_program),
+        service.run_program([
+            Message(hue_light_id, MessageType.SWITCH_ON),
+            Message(speaker_id, MessageType.SWITCH_ON),
+            Message(
+                speaker_id,
+                MessageType.PLAY_SONG,
+                "Rick Astley - Never Gonna Give You Up"
+            )
+        ]),
+        service.run_program([
+            Message(hue_light_id, MessageType.SWITCH_OFF),
+            Message(speaker_id, MessageType.SWITCH_OFF),
+            Message(toilet_id, MessageType.FLUSH),
+            Message(toilet_id, MessageType.CLEAN)
+        ]),
     )
-    await asyncio.gather(
+    await run_parallel(
         service.unregister_device(hue_light_id),
         service.unregister_device(speaker_id),
         service.unregister_device(toilet_id)

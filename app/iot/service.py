@@ -10,10 +10,6 @@ def generate_id(length: int = 8) -> str:
     return "".join(random.choices(string.ascii_uppercase, k=length))
 
 
-async def run_parallel(*functions: Awaitable[Any]) -> None:
-    await asyncio.gather(*functions)
-
-
 # Protocol is very similar to ABC, but uses duck typing
 # so devices should not inherit for it (if it walks like a duck, and quacks like a duck, it's a duck)
 class Device(Protocol):
