@@ -1,3 +1,4 @@
+import asyncio
 import time
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
@@ -5,40 +6,66 @@ from iot.message import Message, MessageType
 from iot.service import IOTService
 
 
-def main() -> None:
-    # create an IOT service
+async def run_concurrently(*functions: asyncio.coroutines) -> None:
+    await asyncio.gather(*functions)
+
+
+async def main() -> None:
     service = IOTService()
 
-    # create and register a few devices
-    hue_light = HueLightDevice()
-    speaker = SmartSpeakerDevice()
-    toilet = SmartToiletDevice()
-    hue_light_id = service.register_device(hue_light)
-    speaker_id = service.register_device(speaker)
-    toilet_id = service.register_device(toilet)
+    devices = [HueLightDevice(), SmartSpeakerDevice(), SmartToiletDevice()]
 
-    # create a few programs
-    wake_up_program = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
-    ]
+    device_tasks = await asyncio.gather(
+        *[service.register_device(device) for device in devices]
+    )
+    device_ids = dict(
+        zip([type(device).__name__ for device in devices], device_tasks)
+    )
 
-    sleep_program = [
-        Message(hue_light_id, MessageType.SWITCH_OFF),
-        Message(speaker_id, MessageType.SWITCH_OFF),
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN),
-    ]
+    await run_concurrently(
+        service.send_msg(
+            Message(device_ids["HueLightDevice"], MessageType.SWITCH_ON)
+        ),
+        service.send_msg(
+            Message(device_ids["SmartSpeakerDevice"], MessageType.SWITCH_ON)
+        ),
+    )
 
-    # run the programs
-    service.run_program(wake_up_program)
-    service.run_program(sleep_program)
+    await asyncio.sleep(0.1)
+
+    await run_concurrently(
+        service.send_msg(
+            Message(
+                device_ids["SmartSpeakerDevice"],
+                MessageType.PLAY_SONG,
+                "Rick Astley - Never Gonna Give You Up",
+            )
+        ),
+    )
+
+    await run_concurrently(
+        service.send_msg(
+            Message(device_ids["HueLightDevice"], MessageType.SWITCH_OFF)
+        ),
+        service.send_msg(
+            Message(device_ids["SmartSpeakerDevice"], MessageType.SWITCH_OFF)
+        ),
+        service.send_msg(
+            Message(device_ids["SmartToiletDevice"], MessageType.FLUSH)
+        ),
+    )
+    await asyncio.sleep(0.1)
+
+    await run_concurrently(
+        service.send_msg(
+            Message(device_ids["SmartToiletDevice"], MessageType.CLEAN)
+        ),
+    )
 
 
 if __name__ == "__main__":
     start = time.perf_counter()
-    main()
+    asyncio.run(main())
     end = time.perf_counter()
 
-    print("Elapsed:", end - start)
+    print("Elapsed time:", end - start)
