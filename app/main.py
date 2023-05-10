@@ -12,9 +12,6 @@ async def run_sequence(*functions: Awaitable[Any]) -> None:
         await function
 
 
-
-
-
 async def main() -> None:
     service = IOTService()
 
