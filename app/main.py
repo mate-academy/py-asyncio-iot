@@ -2,7 +2,11 @@ import asyncio
 import time
 from typing import Awaitable, Any
 
-from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
+from iot.devices import (
+    HueLightDevice,
+    SmartSpeakerDevice,
+    SmartToiletDevice
+)
 from iot.message import Message, MessageType
 from iot.service import IOTService
 
@@ -39,23 +43,21 @@ async def main() -> None:
         MessageType.PLAY_SONG,
         "Rick Astley - Never Gonna Give You Up"
     )
-    hue_light_switch_off = Message(hue_light_id, MessageType.SWITCH_OFF)
-    speaker_switch_off = Message(speaker_id, MessageType.SWITCH_OFF)
-    toilet_flush = Message(toilet_id, MessageType.FLUSH)
-    toilet_clean = Message(toilet_id, MessageType.CLEAN)
 
-    await run_parallel(-service.send_msg
+    await run_parallel(service.send_msg
                        (switch_on),
                        service.send_msg(speaker_switch_on)
                        )
     await run_sequence(service.send_msg(play_song))
     await run_parallel(
-        service.send_msg(hue_light_switch_off),
-        service.send_msg(speaker_switch_off),
-        service.send_msg(toilet_flush)
+        service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
+        service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
+        service.send_msg(Message(toilet_id, MessageType.FLUSH))
 
     )
-    await run_sequence(service.send_msg(toilet_clean))
+    await run_sequence(service.send_msg(Message(
+        toilet_id, MessageType.CLEAN))
+    )
     await run_parallel(
         service.unregister_device(hue_light_id),
         service.unregister_device(speaker_id),
