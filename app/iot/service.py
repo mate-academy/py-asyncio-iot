@@ -10,6 +10,10 @@ def generate_id(length: int = 8) -> str:
     return "".join(random.choices(string.ascii_uppercase, k=length))
 
 
+async def run_parallel(*functions: Awaitable[Any]) -> None:
+    await asyncio.gather(*functions)
+
+
 # Protocol is very similar to ABC, but uses duck typing
 # so devices should not inherit for it (if it walks like a duck, and quacks like a duck, it's a duck)
 class Device(Protocol):
@@ -43,7 +47,7 @@ class IOTService:
     async def run_program(self, program: list[Message]) -> None:
         print("=====RUNNING PROGRAM======")
         tasks = [asyncio.create_task(self.send_msg(msg)) for msg in program]
-        await asyncio.gather(*tasks)
+        await run_parallel(*tasks)
         print("=====END OF PROGRAM======")
 
     async def send_msg(self, msg: Message) -> None:

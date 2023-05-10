@@ -4,7 +4,7 @@ from typing import Awaitable, Any
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
-from iot.service import IOTService
+from iot.service import IOTService, run_parallel
 
 
 async def run_sequence(*functions: Awaitable[Any]) -> None:
@@ -12,8 +12,7 @@ async def run_sequence(*functions: Awaitable[Any]) -> None:
         await function
 
 
-async def run_parallel(*functions: Awaitable[Any]) -> None:
-    await asyncio.gather(*functions)
+
 
 
 async def main() -> None:
