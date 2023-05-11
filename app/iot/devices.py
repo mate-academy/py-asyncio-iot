@@ -1,4 +1,3 @@
-import time
 from asyncio import sleep
 
 from .message import MessageType
