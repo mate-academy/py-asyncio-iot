@@ -39,12 +39,12 @@ class IOTService:
         return self.devices[device_id]
 
     @staticmethod
-    async def run_sequence(*functions) -> None:
+    async def run_sequence(*functions: Awaitable[Any]) -> None:
         for function in functions:
             await function
 
     @staticmethod
-    async def run_program(*functions) -> None:
+    async def run_program(*functions: Awaitable[Any]) -> None:
         print("=====RUNNING PROGRAM======")
         await asyncio.gather(*functions)
         print("=====END OF PROGRAM======")
