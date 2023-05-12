@@ -1,7 +1,7 @@
 import random
 import string
 import asyncio
-from typing import Protocol
+from typing import Protocol, Callable, Any, Coroutine
 
 from .message import Message, MessageType
 
