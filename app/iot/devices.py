@@ -6,7 +6,8 @@ from .message import MessageType
 TIME_TO_SLEEP = 0.5
 
 
-# of course this code looks dumb, but imagine some real implementations of each method here
+# of course this code looks dumb, but imagine
+# some real implementations of each method here
 class HueLightDevice:
     @staticmethod
     async def connect() -> None:
@@ -21,9 +22,11 @@ class HueLightDevice:
         print("Hue Light disconnected.")
 
     @staticmethod
-    async def send_message(message_type: MessageType, data: str = "") -> None:
+    async def send_message(message_type: MessageType,
+                           data: str = "") -> None:
         print(
-            f"Hue Light handling message of type {message_type.name} with data [{data}]."
+            f"Hue Light handling message of type {message_type.name} "
+            f"with data [{data}]."
         )
         await asyncio.sleep(TIME_TO_SLEEP)
         print("Hue Light received message.")
@@ -43,9 +46,11 @@ class SmartSpeakerDevice:
         print("Smart Speaker disconnected.")
 
     @staticmethod
-    async def send_message(message_type: MessageType, data: str = "") -> None:
+    async def send_message(message_type: MessageType,
+                           data: str = "") -> None:
         print(
-            f"Smart Speaker handling message of type {message_type.name} with data [{data}]."
+            f"Smart Speaker handling message of type {message_type.name} "
+            f"with data [{data}]."
         )
         await asyncio.sleep(TIME_TO_SLEEP)
         print("Smart Speaker received message.")
@@ -65,9 +70,11 @@ class SmartToiletDevice:
         print("Smart Toilet disconnected.")
 
     @staticmethod
-    async def send_message(message_type: MessageType, data: str = "") -> None:
+    async def send_message(message_type: MessageType,
+                           data: str = "") -> None:
         print(
-            f"Smart Toilet handling message of type {message_type.name} with data [{data}]."
+            f"Smart Toilet handling message of type {message_type.name} "
+            f"with data [{data}]."
         )
         await asyncio.sleep(TIME_TO_SLEEP)
         print("Smart Toilet received message.")
