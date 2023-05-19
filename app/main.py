@@ -35,29 +35,32 @@ async def main() -> None:
 
     # create a few programs
     await run_parallel(
-        service.run_program(
-            [Message(hue_light_id,
-                     MessageType.SWITCH_ON)]
-        ),
-        run_sequence(service.run_program(
-            [Message(speaker_id,
-                     MessageType.SWITCH_ON)]
-        ),
+        service.run_program([Message(hue_light_id, MessageType.SWITCH_ON)]),
+        run_sequence(
+            service.run_program([Message(speaker_id, MessageType.SWITCH_ON)]),
             service.run_program(
-                [Message(speaker_id,
-                         MessageType.PLAY_SONG,
-                         "Rick Astley - Never Gonna Give You Up")]
-        ), )
+                [
+                    Message(
+                        speaker_id,
+                        MessageType.PLAY_SONG,
+                        "Rick Astley - Never Gonna " "Give You Up",
+                    )
+                ]
+            )
+        )
     )
 
     await run_parallel(
         service.run_program([Message(hue_light_id, MessageType.SWITCH_OFF)]),
         service.run_program([Message(speaker_id, MessageType.SWITCH_OFF)]),
-        run_sequence(service.run_program([Message(toilet_id,
-                                                  MessageType.FLUSH)]),
-                     service.run_program([Message(toilet_id,
-                                                  MessageType.CLEAN)]),
-                     )
+        run_sequence(
+            service.run_program(
+                [
+                    Message(toilet_id, MessageType.FLUSH),
+                    Message(toilet_id, MessageType.CLEAN),
+                ]
+            )
+        )
     )
 
 
