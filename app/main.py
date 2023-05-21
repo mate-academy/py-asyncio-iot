@@ -4,6 +4,16 @@ import time
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
 from iot.service import IOTService
+from typing import Any, Awaitable
+
+
+async def run_sequence(*functions: Awaitable[Any]) -> None:
+    for function in functions:
+        await function
+
+
+async def run_parallel(*functions: Awaitable[Any]) -> None:
+    await asyncio.gather(*functions)
 
 
 async def main() -> None:
@@ -11,44 +21,43 @@ async def main() -> None:
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
-    devices = await asyncio.gather(
-        *[
-            service.register_device(device)
-            for device in (hue_light, speaker, toilet)
-        ]
-    )
-    hue_light_id, speaker_id, toilet_id = devices
-
-    program_smart_hue_light = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
-        Message(hue_light_id, MessageType.SWITCH_OFF),
+    div = [
+        service.register_device(hue_light),
+        service.register_device(speaker),
+        service.register_device(toilet)
     ]
+    hue_light_id, speaker_id, toilet_id = await asyncio.gather(*div)
 
-    program_smart_speaker = [
-        Message(speaker_id, MessageType.SWITCH_ON),
-        Message(
-            speaker_id,
-            MessageType.PLAY_SONG,
-            "Rick Astley - Never Gonna Give You Up",
+    await run_parallel(
+        service.run_program([Message(hue_light_id, MessageType.SWITCH_ON)]),
+        run_sequence(
+            *[
+                service.run_program(
+                    [Message(speaker_id, MessageType.SWITCH_ON)]),
+                service.run_program(
+                    [
+                        Message(
+                            speaker_id,
+                            MessageType.PLAY_SONG,
+                            "Rick Astley - Never Gonna Give You Up",
+                        )
+                    ]
+                ),
+            ]
         ),
-        Message(speaker_id, MessageType.SWITCH_OFF),
-    ]
+    )
 
-    program_smart_toilet = [
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN),
-    ]
-
-    # run smart devices programs
-    await asyncio.gather(
-        *[
-            service.run_program(program)
-            for program in (
-                program_smart_hue_light,
-                program_smart_speaker,
-                program_smart_toilet,
+    await run_parallel(
+        service.run_program([Message(hue_light_id, MessageType.SWITCH_OFF)]),
+        service.run_program([Message(speaker_id, MessageType.SWITCH_OFF)]),
+        run_sequence(
+            service.run_program(
+                [
+                    Message(toilet_id, MessageType.FLUSH),
+                    Message(toilet_id, MessageType.CLEAN),
+                ]
             )
-        ]
+        ),
     )
 
 
