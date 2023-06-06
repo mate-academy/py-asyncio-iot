@@ -1,6 +1,6 @@
 import time
 import asyncio
-from typing import Any, Awaitable
+from typing import Any, Awaitable, List
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
@@ -12,8 +12,8 @@ async def run_sequence(*functions: Awaitable[Any]) -> None:
         await function
 
 
-async def run_parallel(*functions: Awaitable[Any]) -> None:
-    await asyncio.gather(*functions)
+async def run_parallel(*functions: Awaitable[Any]) -> List[Any]:
+    return await asyncio.gather(*functions)
 
 
 async def main() -> None:
@@ -25,7 +25,7 @@ async def main() -> None:
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
 
-    hue_light_id, speaker_id, toilet_id = await asyncio.gather(
+    hue_light_id, speaker_id, toilet_id = await run_parallel(
         service.register_device(hue_light),
         service.register_device(speaker),
         service.register_device(toilet),
@@ -42,6 +42,7 @@ async def main() -> None:
             )),
         )
     )
+
     # sleep_program
     await run_parallel(
         service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
