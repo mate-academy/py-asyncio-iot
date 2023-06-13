@@ -37,7 +37,7 @@ async def main() -> None:
 
     # run the programs
     task1 = asyncio.create_task(service.run_program(wake_up_program))
-    task2 = service.run_program(sleep_program)
+    task2 = asyncio.create_task(service.run_program(sleep_program))
 
     await task1
     await task2
