@@ -23,7 +23,7 @@ async def main() -> None:
     )
 
     # combine run_sequence and run_parallel for wake_up_program
-    await run_sequence(
+    await asyncio.gather(
         run_parallel(
             service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
             service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
@@ -37,7 +37,7 @@ async def main() -> None:
     )
 
     # combine run_sequence and run_parallel for sleep_program
-    await run_sequence(
+    await asyncio.gather(
         run_parallel(
             service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
             service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
@@ -48,7 +48,7 @@ async def main() -> None:
 
     print("=====END OF PROGRAM======")
 
-    await run_sequence(
+    await asyncio.gather(
         service.unregister_device(hue_light_id),
         service.unregister_device(speaker_id),
         service.unregister_device(toilet_id),
@@ -56,12 +56,12 @@ async def main() -> None:
 
 
 async def run_sequence(*functions: asyncio.Task) -> None:
-    for function in functions:
-        await function
+    await asyncio.gather(*functions)
 
 
 async def run_parallel(*functions: asyncio.Task) -> None:
-    await asyncio.gather(*functions)
+    tasks = [asyncio.create_task(func) for func in functions]
+    await asyncio.gather(*tasks, return_exceptions=True)
 
 
 if __name__ == "__main__":
