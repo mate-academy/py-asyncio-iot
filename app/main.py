@@ -56,22 +56,8 @@ async def main() -> None:
 
 
 async def run_sequence(*functions: asyncio.Task) -> None:
-    tasks = [asyncio.create_task(func) for func in functions]
-    for task in tasks:
-        await task
-        if task.get_name() == "send_msg":
-            device_id = task.get_coro().cr_frame.f_locals["msg"].device_id
-            device = service.get_device(device_id)
-            print(f"{device.__class__.__name__} received message.")
-            await device.send_message(MessageType(task.get_coro().cr_frame.f_locals["msg"].msg_type))
-
-        if task.get_name() == "unregister_device":
-            device_id = task.get_coro().cr_frame.f_locals["device_id"]
-            device = service.get_device(device_id)
-            print(f"Disconnecting {device.__class__.__name__}.")
-            await device.disconnect()
-            await asyncio.sleep(TIME_TO_SLEEP)
-            print(f"{device.__class__.__name__} disconnected.")
+    for function in functions:
+        await function
 
 
 async def run_parallel(*functions: asyncio.Task) -> None:
