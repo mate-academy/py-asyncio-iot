@@ -46,8 +46,6 @@ async def main() -> None:
         service.send_msg(Message(toilet_id, MessageType.FLUSH)),
     )
 
-    print("=====END OF PROGRAM======")
-
     await run_sequence(
         service.unregister_device(hue_light_id),
         service.unregister_device(speaker_id),
@@ -80,7 +78,6 @@ async def run_parallel(*functions: asyncio.Task) -> None:
 
 if __name__ == "__main__":
     start = time.perf_counter()
-    print("=====RUNNING PROGRAM======")
     asyncio.run(main())
     end = time.perf_counter()
 
