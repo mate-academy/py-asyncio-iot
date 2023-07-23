@@ -14,9 +14,12 @@ async def main() -> None:
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
-    hue_light_id = await service.register_device(hue_light)
-    speaker_id = await service.register_device(speaker)
-    toilet_id = await service.register_device(toilet)
+    tasks = [
+        service.register_device(device)
+        for device in (hue_light, speaker, toilet)
+    ]
+    hue_light_id, speaker_id, toilet_id = await asyncio.gather(*tasks)
+
 
     # create a few programs
     wake_up_program = [
