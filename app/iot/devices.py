@@ -22,7 +22,7 @@ class HueLightDevice:
     async def send_message(
             self,
             message_type: MessageType,
-            data: str = ""
+            data: str = "",
     ) -> None:
         print(
             f"Hue Light handling message of type {message_type.name} "
@@ -46,7 +46,7 @@ class SmartSpeakerDevice:
     async def send_message(
             self,
             message_type: MessageType,
-            data: str = ""
+            data: str = "",
     ) -> None:
         print(
             f"Smart Speaker handling message of type {message_type.name} "
@@ -70,7 +70,7 @@ class SmartToiletDevice:
     async def send_message(
             self,
             message_type: MessageType,
-            data: str = ""
+            data: str = "",
     ) -> None:
         print(
             f"Smart Toilet handling message of type {message_type.name} "
