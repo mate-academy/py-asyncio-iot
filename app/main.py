@@ -12,8 +12,9 @@ async def run_sequence(*functions: Awaitable[Any]) -> None:
         await function
 
 
-async def run_parallel(*functions: Awaitable[Any]) -> None:
-    await asyncio.gather(*functions)
+async def run_parallel(*functions: Awaitable[Any]) -> tuple:
+    device_ids = await asyncio.gather(*functions)
+    return device_ids
 
 
 async def main() -> None:
@@ -24,25 +25,29 @@ async def main() -> None:
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
-    devices = [hue_light, speaker, toilet]
 
-    device_ids = await asyncio.gather(
-        *[service.register_device(device) for device in devices]
+    device_ids = await run_parallel(
+        service.register_device(hue_light),
+        service.register_device(speaker),
+        service.register_device(toilet),
     )
-
-    await run_sequence(
-            run_parallel(
-                service.send_msg(Message(device_ids[0], MessageType.SWITCH_ON, "")),
-                service.send_msg(Message(device_ids[1], MessageType.SWITCH_ON, "")),
-                service.send_msg(Message(device_ids[1], MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"))
-                ),
-            run_parallel(
-                service.send_msg(Message(device_ids[0], MessageType.SWITCH_OFF)),
-                service.send_msg(Message(device_ids[1], MessageType.SWITCH_OFF)),
-                service.send_msg(Message(device_ids[2], MessageType.FLUSH)),
-                service.send_msg(Message(device_ids[2], MessageType.CLEAN)),
+    await run_parallel(
+        service.send_msg(Message(device_ids[0], MessageType.SWITCH_ON, "")),
+        service.send_msg(Message(device_ids[1], MessageType.SWITCH_ON, "")),
+        service.send_msg(Message(
+            device_ids[1],
+            MessageType.PLAY_SONG,
+            "Rick Astley - Never Gonna Give You Up",
             )
         )
+    )
+    await run_parallel(
+        service.send_msg(Message(device_ids[0], MessageType.SWITCH_OFF)),
+        service.send_msg(Message(device_ids[1], MessageType.SWITCH_OFF)),
+        service.send_msg(Message(device_ids[2], MessageType.FLUSH)),
+        service.send_msg(Message(device_ids[2], MessageType.CLEAN)),
+    ),
+
 
 if __name__ == "__main__":
     start = time.perf_counter()
