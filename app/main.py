@@ -6,6 +6,10 @@ from iot.message import Message, MessageType
 from iot.service import IOTService
 
 
+def create_program(*messages):
+    return [Message(*msg) for msg in messages]
+
+
 async def main() -> None:
     service = IOTService()
 
@@ -28,24 +32,23 @@ async def main() -> None:
 
     hue_light_id, speaker_id, toilet_id = list_of_id
 
-    wake_up_program = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.SWITCH_ON),
-        Message(
-            speaker_id, MessageType.PLAY_SONG,
-            "Rick Astley - Never Gonna Give You Up"
-        ),
-    ]
+    wake_up_program = create_program(
+        (hue_light_id, MessageType.SWITCH_ON),
+        (speaker_id, MessageType.SWITCH_ON),
+        (speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up")
+    )
 
-    sleep_program = [
-        Message(hue_light_id, MessageType.SWITCH_OFF),
-        Message(speaker_id, MessageType.SWITCH_OFF),
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN),
-    ]
+    sleep_program = create_program(
+        (hue_light_id, MessageType.SWITCH_OFF),
+        (speaker_id, MessageType.SWITCH_OFF),
+        (toilet_id, MessageType.FLUSH),
+        (toilet_id, MessageType.CLEAN)
+    )
 
-    await service.run_program(wake_up_program)
-    await service.run_program(sleep_program)
+    await asyncio.gather(
+        service.run_program(wake_up_program),
+        service.run_program(sleep_program)
+    )
 
 
 if __name__ == "__main__":
