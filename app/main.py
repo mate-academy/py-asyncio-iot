@@ -7,26 +7,34 @@ from iot.service import IOTService
 
 
 async def main() -> None:
-    # create an IOT service
     service = IOTService()
 
-    # create and register a few devices
-    hue_light = HueLightDevice()
-    speaker = SmartSpeakerDevice()
-    toilet = SmartToiletDevice()
+    devices = [
+        HueLightDevice(),
+        SmartSpeakerDevice(),
+        SmartToiletDevice()
+    ]
 
-    task1 = asyncio.create_task(service.register_device(hue_light))
-    task2 = asyncio.create_task(service.register_device(speaker))
-    task3 = asyncio.create_task(service.register_device(toilet))
+    tasks = [
+        asyncio.create_task(
+            service.register_device(
+                device
+            )
+        )
+        for device in devices
+    ]
 
-    list_of_id = await asyncio.gather(task1, task2, task3)
+    list_of_id = await asyncio.gather(*tasks)
+
     hue_light_id, speaker_id, toilet_id = list_of_id
 
-    # create a few programs
     wake_up_program = [
         Message(hue_light_id, MessageType.SWITCH_ON),
         Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
+        Message(
+            speaker_id, MessageType.PLAY_SONG,
+            "Rick Astley - Never Gonna Give You Up"
+        ),
     ]
 
     sleep_program = [
@@ -36,7 +44,6 @@ async def main() -> None:
         Message(toilet_id, MessageType.CLEAN),
     ]
 
-    # run the programs
     await service.run_program(wake_up_program)
     await service.run_program(sleep_program)
 
