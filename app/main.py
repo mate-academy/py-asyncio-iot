@@ -21,9 +21,7 @@ async def main() -> None:
         service.register_device(toilet)
     )
 
-    hue_light_id = registered_devices[0]
-    speaker_id = registered_devices[1]
-    toilet_id = registered_devices[2]
+    hue_light_id, speaker_id, toilet_id = registered_devices
 
     await service.run_program([
         service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
