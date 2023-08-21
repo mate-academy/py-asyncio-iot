@@ -17,10 +17,8 @@ async def run_parallel(*functions: Awaitable[Any]) -> None:
 
 
 async def main() -> None:
-    # create an IOT service
     service = IOTService()
 
-    # create and register a few devices
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
@@ -31,30 +29,31 @@ async def main() -> None:
         ]
     )
 
-    # create a few programs
     async def wake_up_program() -> None:
         await run_parallel(
             service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
-            service.send_msg(Message(speaker_id, MessageType.SWITCH_ON))
+            service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
         )
 
         await run_sequence(
-            service.send_msg(Message(
-                speaker_id,
-                MessageType.PLAY_SONG,
-                "Rick Astley - Never Gonna Give You Up"
-            ))
+            service.send_msg(
+                Message(
+                    speaker_id,
+                    MessageType.PLAY_SONG,
+                    "Rick Astley - Never Gonna Give You Up",
+                )
+            )
         )
 
     async def sleep_program() -> None:
         await run_parallel(
             service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
-            service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF))
+            service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
         )
 
         await run_sequence(
             service.send_msg(Message(toilet_id, MessageType.FLUSH)),
-            service.send_msg(Message(toilet_id, MessageType.CLEAN))
+            service.send_msg(Message(toilet_id, MessageType.CLEAN)),
         )
 
     # run the programs
