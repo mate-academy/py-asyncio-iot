@@ -16,8 +16,6 @@ async def run_parallel(*functions: Awaitable[Any]) -> None:
     await asyncio.gather(*functions)
 
 
-
-
 async def main() -> None:
     # create an IOT service
     service = IOTService()
@@ -36,22 +34,23 @@ async def main() -> None:
         [
             Message(hue_light_id, MessageType.SWITCH_ON),
             Message(speaker_id, MessageType.SWITCH_ON),
-            ],
+        ],
         [
             Message(speaker_id, MessageType.PLAY_SONG,
-                "Rick Astley - Never Gonna Give You Up"),
-            ]
+                    "Rick Astley - Never Gonna Give You Up"
+                    ),
+        ]
     ]
     sleep_program = [
-            [
-                Message(hue_light_id, MessageType.SWITCH_OFF),
-                Message(speaker_id, MessageType.SWITCH_OFF),
-                Message(toilet_id, MessageType.FLUSH),
-                ],
-            [
-                Message(toilet_id, MessageType.CLEAN),
-                ]
+        [
+            Message(hue_light_id, MessageType.SWITCH_OFF),
+            Message(speaker_id, MessageType.SWITCH_OFF),
+            Message(toilet_id, MessageType.FLUSH),
+        ],
+        [
+            Message(toilet_id, MessageType.CLEAN),
         ]
+    ]
     await service.run_program(wake_up_program[0], wake_up_program[1])
     await service.run_program(sleep_program[0], sleep_program[1])
 

@@ -41,8 +41,6 @@ class IOTService:
     def get_device(self, device_id: str) -> Device:
         return self.devices[device_id]
 
-
-
     async def run_program(
             self,
             parallel_run: list[Message],
