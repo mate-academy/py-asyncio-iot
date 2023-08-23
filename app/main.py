@@ -1,6 +1,7 @@
 import asyncio
 import time
 
+from app.helper import run_parallel, run_sequence
 from app.iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from app.iot.message import Message, MessageType
 from app.iot.service import IOTService
@@ -15,30 +16,31 @@ async def main() -> None:
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
     devices = [hue_light, speaker, toilet]
+
     hue_light_id, speaker_id, toilet_id = await asyncio.gather(
         *[service.register_device(device) for device in devices]
     )
-    # hue_light_id = service.register_device(hue_light)
-    # speaker_id = service.register_device(speaker)
-    # toilet_id = service.register_device(toilet)
 
-    # create a few programs
-    wake_up_program = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
-    ]
+    await run_parallel(
+        service.run_program([
+            Message(hue_light_id, MessageType.SWITCH_ON),
+            Message(speaker_id, MessageType.SWITCH_ON),
+            Message(
+                speaker_id,
+                MessageType.PLAY_SONG,
+                "Rick Astley - Never Gonna Give You Up"
+            ),
+        ])
+    )
 
-    sleep_program = [
-        Message(hue_light_id, MessageType.SWITCH_OFF),
-        Message(speaker_id, MessageType.SWITCH_OFF),
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN),
-    ]
-
-    # run the programs
-    await service.run_program(wake_up_program)
-    await service.run_program(sleep_program)
+    await run_sequence(
+        service.run_program([
+            Message(hue_light_id, MessageType.SWITCH_OFF),
+            Message(speaker_id, MessageType.SWITCH_OFF),
+            Message(toilet_id, MessageType.FLUSH),
+            Message(toilet_id, MessageType.CLEAN),
+        ])
+    )
 
 
 if __name__ == "__main__":
@@ -47,6 +49,3 @@ if __name__ == "__main__":
     end = time.perf_counter()
 
     print("Elapsed:", end - start)
-
-
-# Звичайний - 5.04
