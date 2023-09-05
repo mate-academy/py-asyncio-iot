@@ -7,10 +7,8 @@ from iot.service import IOTService
 
 
 async def main() -> None:
-    # create an IOT service
     service = IOTService()
 
-    # create and register a few devices
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
@@ -20,7 +18,6 @@ async def main() -> None:
         service.register_device(toilet)
     ])
 
-    # create a few programs
     wake_up_program = [
         [
             Message(hue_light_id, MessageType.SWITCH_ON),
@@ -42,7 +39,6 @@ async def main() -> None:
         ]
     ]
 
-    # run the programs
     await service.run_program(wake_up_program)
     await service.run_program(sleep_program)
 
