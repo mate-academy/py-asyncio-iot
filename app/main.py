@@ -37,10 +37,7 @@ async def main() -> None:
                 Message(hue_light_id, MessageType.SWITCH_ON),
                 Message(speaker_id, MessageType.SWITCH_ON),
             ]
-        )
-    )
-
-    await run_sequence(
+        ),
         service.run_program(
             [
                 Message(
@@ -49,24 +46,18 @@ async def main() -> None:
                     "Rick Astley - Never Gonna Give You Up",
                 )
             ]
-        )
-    )
-
-    await run_parallel(
+        ),
         service.run_program(
             [
                 Message(hue_light_id, MessageType.SWITCH_OFF),
                 Message(speaker_id, MessageType.SWITCH_OFF),
             ]
-        )
+        ),
     )
+
     await run_sequence(
-        service.run_program(
-            [
-                Message(toilet_id, MessageType.FLUSH),
-                Message(toilet_id, MessageType.CLEAN),
-            ]
-        )
+        service.run_program([Message(toilet_id, MessageType.FLUSH)]),
+        service.run_program([Message(toilet_id, MessageType.CLEAN)]),
     )
 
 
