@@ -25,26 +25,28 @@ async def main() -> None:
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
-    hue_light_id = asyncio.create_task(service.register_device(hue_light))
-    speaker_id = asyncio.create_task(service.register_device(speaker))
-    toilet_id = asyncio.create_task(service.register_device(toilet))
-    await run_parallel(hue_light_id, speaker_id, toilet_id)
+    hue_light_id, speaker_id, toilet_id = await asyncio.gather(
+        service.register_device(hue_light),
+        service.register_device(speaker),
+        service.register_device(toilet)
+    )
+
     # create a few programs
     wake_up_program = [
-        Message(hue_light_id.result(), MessageType.SWITCH_ON),
-        Message(speaker_id.result(), MessageType.SWITCH_ON),
+        Message(hue_light_id, MessageType.SWITCH_ON),
+        Message(speaker_id, MessageType.SWITCH_ON),
         Message(
-            speaker_id.result(),
+            speaker_id,
             MessageType.PLAY_SONG,
             "Rick Astley - Never Gonna Give You Up"
         ),
     ]
 
     sleep_program = [
-        Message(hue_light_id.result(), MessageType.SWITCH_OFF),
-        Message(speaker_id.result(), MessageType.SWITCH_OFF),
-        Message(toilet_id.result(), MessageType.FLUSH),
-        Message(toilet_id.result(), MessageType.CLEAN),
+        Message(hue_light_id, MessageType.SWITCH_OFF),
+        Message(speaker_id, MessageType.SWITCH_OFF),
+        Message(toilet_id, MessageType.FLUSH),
+        Message(toilet_id, MessageType.CLEAN),
     ]
 
     # run_sequence
