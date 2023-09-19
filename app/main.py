@@ -5,23 +5,39 @@ from iot.message import Message, MessageType
 from iot.service import IOTService
 import asyncio
 
+from typing import Any, Awaitable
+
+
+async def run_sequence(*functions: Awaitable[Any]) -> None:
+    for function in functions:
+        await function
+
+
+async def run_parallel(*functions: Awaitable[Any]) -> None:
+    await asyncio.gather(*functions)
+
+
 async def main() -> None:
     # create an IOT service
     service = IOTService()
 
-    # create and register a few devices
+    # run_parallel
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
     hue_light_id = asyncio.create_task(service.register_device(hue_light))
     speaker_id = asyncio.create_task(service.register_device(speaker))
     toilet_id = asyncio.create_task(service.register_device(toilet))
-    await asyncio.gather(hue_light_id, speaker_id, toilet_id)
+    await run_parallel(hue_light_id, speaker_id, toilet_id)
     # create a few programs
     wake_up_program = [
         Message(hue_light_id.result(), MessageType.SWITCH_ON),
         Message(speaker_id.result(), MessageType.SWITCH_ON),
-        Message(speaker_id.result(), MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
+        Message(
+            speaker_id.result(),
+            MessageType.PLAY_SONG,
+            "Rick Astley - Never Gonna Give You Up"
+        ),
     ]
 
     sleep_program = [
@@ -31,11 +47,11 @@ async def main() -> None:
         Message(toilet_id.result(), MessageType.CLEAN),
     ]
 
-    # run the programs
-    task1 = asyncio.create_task(service.run_program(wake_up_program))
-    task2 = asyncio.create_task(service.run_program(sleep_program))
-    await task1
-    await task2
+    # run_sequence
+    await run_sequence(
+        service.run_program(wake_up_program),
+        service.run_program(sleep_program)
+    )
 
 
 if __name__ == "__main__":
