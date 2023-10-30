@@ -10,17 +10,15 @@ from iot.service import IOTService
 async def main() -> None:
     service = IOTService()
 
-    hue_light = HueLightDevice()
-    speaker = SmartSpeakerDevice()
-    toilet = SmartToiletDevice()
+    devices = (HueLightDevice(), SmartSpeakerDevice(), SmartToiletDevice())
 
-    devices = await asyncio.gather(
+    registered_devices = await asyncio.gather(
         *[
             service.register_device(device)
-            for device in (hue_light, speaker, toilet)
+            for device in devices
         ]
     )
-    hue_light_id, speaker_id, toilet_id = devices
+    hue_light_id, speaker_id, toilet_id = registered_devices
 
     async def run_sequence(*functions: Awaitable[Any]) -> None:
         for function in functions:
