@@ -13,10 +13,7 @@ async def main() -> None:
     devices = (HueLightDevice(), SmartSpeakerDevice(), SmartToiletDevice())
 
     registered_devices = await asyncio.gather(
-        *[
-            service.register_device(device)
-            for device in devices
-        ]
+        *[service.register_device(device) for device in devices]
     )
     hue_light_id, speaker_id, toilet_id = registered_devices
 
@@ -28,47 +25,47 @@ async def main() -> None:
         await asyncio.gather(*functions)
 
     await run_parallel(
-            service.run_program(
-                [
-                    Message(
-                        hue_light_id,
-                        MessageType.SWITCH_ON,
-                    ),
-                    Message(
-                        speaker_id,
-                        MessageType.SWITCH_ON,
-                    ),
-                    Message(
-                        speaker_id,
-                        MessageType.PLAY_SONG,
-                        "Rick Astley - Never Gonna Give You Up",
-                    )
-                ]
-            )
-        ),
+        service.run_program(
+            [
+                Message(
+                    hue_light_id,
+                    MessageType.SWITCH_ON,
+                ),
+                Message(
+                    speaker_id,
+                    MessageType.SWITCH_ON,
+                ),
+                Message(
+                    speaker_id,
+                    MessageType.PLAY_SONG,
+                    "Rick Astley - Never Gonna Give You Up",
+                ),
+            ]
+        )
+    ),
 
     await run_sequence(
-            service.run_program(
-                [
-                    Message(
-                        hue_light_id,
-                        MessageType.SWITCH_OFF,
-                    ),
-                    Message(
-                        speaker_id,
-                        MessageType.SWITCH_OFF,
-                    ),
-                    Message(
-                        toilet_id,
-                        MessageType.FLUSH,
-                    ),
-                    Message(
-                        toilet_id,
-                        MessageType.CLEAN,
-                    )
-                ]
-            )
+        service.run_program(
+            [
+                Message(
+                    hue_light_id,
+                    MessageType.SWITCH_OFF,
+                ),
+                Message(
+                    speaker_id,
+                    MessageType.SWITCH_OFF,
+                ),
+                Message(
+                    toilet_id,
+                    MessageType.FLUSH,
+                ),
+                Message(
+                    toilet_id,
+                    MessageType.CLEAN,
+                ),
+            ]
         )
+    )
 
 
 if __name__ == "__main__":
