@@ -1,14 +1,14 @@
 import asyncio
 import time
-from typing import Awaitable, Any
+from typing import Awaitable, Any, Callable
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
 from iot.service import IOTService
 
 
-def speaker_actions(service: IOTService, speaker_id: str):
-    async def actions():
+def speaker_actions(service: IOTService, speaker_id: str) -> Callable:
+    async def actions() -> None:
         await run_sequence(
             service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
             service.send_msg(
@@ -23,8 +23,8 @@ def speaker_actions(service: IOTService, speaker_id: str):
     return actions
 
 
-def toilet_actions(service: IOTService, toilet_id: str):
-    async def actions():
+def toilet_actions(service: IOTService, toilet_id: str) -> Callable:
+    async def actions() -> None:
         await run_sequence(
             service.send_msg(Message(toilet_id, MessageType.FLUSH)),
             service.send_msg(Message(toilet_id, MessageType.CLEAN)),
