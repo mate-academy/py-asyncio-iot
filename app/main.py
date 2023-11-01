@@ -52,5 +52,4 @@ if __name__ == "__main__":
     start = time.perf_counter()
     asyncio.run(main())
     end = time.perf_counter()
-
     print("Elapsed:", end - start)

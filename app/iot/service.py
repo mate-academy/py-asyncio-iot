@@ -23,7 +23,6 @@ class Device(Protocol):
     async def send_message(self, message_type: MessageType, data: str) -> None:
         ...
 
-
 class IOTService:
     def __init__(self) -> None:
         self.devices: dict[str, Device] = {}
