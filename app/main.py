@@ -31,21 +31,21 @@ async def main() -> None:
         toilet_id = tg.create_task(service.register_device(toilet))
 
     await run_sequence(
-        service.send_msg(
-            Message(hue_light_id.result(), MessageType.SWITCH_ON)
-        ),
         run_parallel(
             service.send_msg(
                 Message(speaker_id.result(), MessageType.SWITCH_ON)
             ),
             service.send_msg(
+                Message(hue_light_id.result(), MessageType.SWITCH_ON)
+            ),
+        ),
+        service.send_msg(
                 Message(
                     speaker_id.result(),
                     MessageType.PLAY_SONG,
                     "Rick Astley - Never Gonna Give You Up",
                 )
             ),
-        ),
     )
 
     await run_parallel(
