@@ -12,6 +12,7 @@ def generate_id(length: int = 8) -> str:
 
 # Protocol is very similar to ABC, but uses duck typing
 
+
 class Device(Protocol):
     async def connect(self) -> None:
         ...
