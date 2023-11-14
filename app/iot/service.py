@@ -3,6 +3,8 @@ import random
 import string
 from typing import Protocol
 
+from typing_extensions import List
+
 from .message import Message, MessageType
 
 
@@ -38,9 +40,10 @@ class IOTService:
     async def get_device(self, device_id: str) -> Device:
         return self.devices[device_id]
 
-    async def run_program(self, program: list[Message]) -> None:
+    async def run_program(
+        self, parallel: List[Message], sequence: List[Message]
+    ) -> None:
         print("=====RUNNING PROGRAM======")
-        parallel, sequence = program
         await asyncio.gather(*[self.send_msg(msg) for msg in parallel])
         for msg in sequence:
             await self.send_msg(msg)

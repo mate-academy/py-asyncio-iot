@@ -20,33 +20,33 @@ async def main() -> None:
         ]
     )
 
-    wake_up_program = [
-        [
-            Message(hue_light_id, MessageType.SWITCH_ON),
-            Message(speaker_id, MessageType.SWITCH_ON),
-        ],
-        [
-            Message(
-                speaker_id,
-                MessageType.PLAY_SONG,
-                "Rick Astley - Never Gonna Give You Up",
-            ),
-        ],
+    wake_up_program_parallel = [
+        Message(hue_light_id, MessageType.SWITCH_ON),
+        Message(speaker_id, MessageType.SWITCH_ON),
     ]
 
-    sleep_program = [
-        [
-            Message(hue_light_id, MessageType.SWITCH_OFF),
-            Message(speaker_id, MessageType.SWITCH_OFF),
-            Message(toilet_id, MessageType.FLUSH),
-        ],
-        [
-            Message(toilet_id, MessageType.CLEAN),
-        ],
+    wake_up_program_sequence = [
+        Message(
+            speaker_id,
+            MessageType.PLAY_SONG,
+            "Rick Astley - Never Gonna Give You Up",
+        ),
     ]
 
-    await service.run_program(wake_up_program)
-    await service.run_program(sleep_program)
+    sleep_program_parallel = [
+        Message(hue_light_id, MessageType.SWITCH_OFF),
+        Message(speaker_id, MessageType.SWITCH_OFF),
+        Message(toilet_id, MessageType.FLUSH),
+    ]
+
+    sleep_program_sequence = [
+        Message(toilet_id, MessageType.CLEAN),
+    ]
+
+    await service.run_program(
+        wake_up_program_parallel, wake_up_program_sequence
+    )
+    await service.run_program(sleep_program_parallel, sleep_program_sequence)
 
 
 if __name__ == "__main__":
