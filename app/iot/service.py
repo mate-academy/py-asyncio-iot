@@ -40,7 +40,7 @@ class IOTService:
     def get_device(self, device_id: str) -> Device:
         return self.devices[device_id]
 
-    async def run_program(self, program: list[Message]) -> None:
+    async def run_program(self, *program: Message) -> None:
         print("=====RUNNING PROGRAM======")
         running_programs = asyncio.gather(*[self.send_msg(msg) for msg in program])
         await running_programs
