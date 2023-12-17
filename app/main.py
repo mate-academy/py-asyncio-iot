@@ -10,40 +10,34 @@ async def main() -> None:
     # create an IOT service
     service = IOTService()
 
-    # create and register a few devices
-    hue_light = HueLightDevice()
-    speaker = SmartSpeakerDevice()
-    toilet = SmartToiletDevice()
-    hue_light_id = asyncio.create_task(service.register_device(hue_light))
-    speaker_id = asyncio.create_task(service.register_device(speaker))
-    toilet_id = asyncio.create_task(service.register_device(toilet))
-
-    await hue_light_id
-    await speaker_id
-    await toilet_id
+    hue_light_id, speaker_id, toilet_id = await asyncio.gather(
+        service.register_device(HueLightDevice()),
+        service.register_device(SmartSpeakerDevice()),
+        service.register_device(SmartToiletDevice()),
+    )
 
     await service.run_sequence(
         await service.run_parallel(
             [
-                Message(hue_light_id.result(), MessageType.SWITCH_ON),
-                Message(speaker_id.result(), MessageType.SWITCH_ON),
+                Message(hue_light_id, MessageType.SWITCH_ON),
+                Message(speaker_id, MessageType.SWITCH_ON),
             ]
         ),
         [
-            Message(speaker_id.result(), MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
+            Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
         ]
     )
 
     await service.run_sequence(
         await service.run_parallel(
             [
-                Message(hue_light_id.result(), MessageType.SWITCH_OFF),
-                Message(speaker_id.result(), MessageType.SWITCH_OFF),
-                Message(toilet_id.result(), MessageType.FLUSH),
+                Message(hue_light_id, MessageType.SWITCH_OFF),
+                Message(speaker_id, MessageType.SWITCH_OFF),
+                Message(toilet_id, MessageType.FLUSH),
             ]
         ),
         [
-            Message(toilet_id.result(), MessageType.CLEAN),
+            Message(toilet_id, MessageType.CLEAN),
         ]
     )
 

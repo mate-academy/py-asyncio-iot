@@ -52,9 +52,7 @@ class IOTService:
             await self.send_msg(msg)
 
     async def run_parallel(self, parallel: list[Message]) -> None:
-        async with asyncio.TaskGroup() as tg:
-            [tg.create_task(self.send_msg(msg))
-             for msg in parallel]
+        await asyncio.gather(*[self.send_msg(msg) for msg in parallel])
 
     async def send_msg(self, msg: Message) -> None:
         await self.devices[msg.device_id].send_message(msg.msg_type, msg.data)
