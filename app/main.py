@@ -26,7 +26,6 @@ async def main() -> None:
     async def run_parallel(*functions: Awaitable[Any]) -> None:
         await asyncio.gather(*functions)
 
-    # run the programs
     await run_sequence(
         run_parallel(
             service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
