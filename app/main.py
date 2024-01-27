@@ -33,6 +33,7 @@ async def main() -> None:
     toilet_id = device_ids[2]
 
     # run wake up sequence
+    print("=====RUNNING PROGRAM======")
     await run_parallel(
         service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
         run_sequence(
@@ -41,8 +42,10 @@ async def main() -> None:
                                      "Rick Astley - Never Gonna Give You Up")),
         )
     )
+    print("=====END OF PROGRAM======")
 
     # run sleep sequence
+    print("=====RUNNING PROGRAM======")
     await run_parallel(
         service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
         service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
@@ -51,6 +54,7 @@ async def main() -> None:
             service.send_msg(Message(toilet_id, MessageType.CLEAN)),
         )
     )
+    print("=====END OF PROGRAM======")
 
 
 if __name__ == "__main__":
