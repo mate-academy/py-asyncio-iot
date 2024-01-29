@@ -1,6 +1,6 @@
 # Python Asyncio IoT
 
-**Please note:** read [the guideline](https://github.com/mate-academy/py-task-guideline/blob/main/README.md)
+**Please note:** read [the guideline](https://githugit b.com/mate-academy/py-task-guideline/blob/main/README.md)
 before starting.
 
 You're given a skeleton of the IoT service taken from the internet. 
