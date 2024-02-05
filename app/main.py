@@ -70,7 +70,8 @@ async def main() -> None:
                 run_sequence(
                     *[
                         service.send_msg(Message(toilet_id, MessageType.FLUSH)),
-                        service.send_msg(Message(toilet_id, MessageType.CLEAN))
+                        service.send_msg(Message(toilet_id, MessageType.CLEAN)),
+                        service.unregister_device(toilet_id)
                     ]
                 )
             ]
