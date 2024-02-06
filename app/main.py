@@ -36,17 +36,15 @@ async def main() -> None:
                 Message(speaker_id, MessageType.SWITCH_ON),
             ]),
         ),
-        service.run_program([
-            Message(
-                speaker_id,
-                MessageType.PLAY_SONG,
-                "Rick Astley - Never Gonna Give You Up"
-            ),
-        ]),
         run_parallel(
             service.run_program([
                 Message(hue_light_id, MessageType.SWITCH_OFF),
                 Message(speaker_id, MessageType.SWITCH_OFF),
+            ]),
+        ),
+        run_parallel(
+            service.run_program([
+                Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
             ]),
         ),
         run_sequence(
