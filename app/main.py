@@ -29,28 +29,50 @@ async def main() -> None:
     async def run_parallel(*functions: Awaitable[Any]) -> None:
         await asyncio.gather(*functions)
 
-    await run_sequence(
-        run_parallel(
-            service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
-            run_sequence(
-                service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
-                service.send_msg(
-                    Message(
-                        speaker_id,
-                        MessageType.PLAY_SONG,
-                        "Rick Astley - Never Gonna Give You Up",
-                    )
-                ),
+    """Run program"""
+    await service.run_program(
+        run_sequence(
+            run_parallel(
+                *[
+                    service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
+                    run_sequence(
+                        *[
+                            service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
+                            service.send_msg(
+                                Message(
+                                    speaker_id,
+                                    MessageType.PLAY_SONG,
+                                    "Rick Astley - Never Gonna Give You Up",
+                                )
+                            ),
+                        ]
+                    ),
+                ]
             ),
-        ),
-        run_parallel(
-            service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
-            service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
-            run_sequence(
-                service.send_msg(Message(toilet_id, MessageType.FLUSH)),
-                service.send_msg(Message(toilet_id, MessageType.CLEAN)),
-            ),
-        ),
+            run_parallel(
+                *[
+                    run_sequence(
+                        *[
+                            service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
+                            service.unregister_device(hue_light_id),
+                        ]
+                    ),
+                    run_sequence(
+                        *[
+                            service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
+                            service.unregister_device(speaker_id),
+                        ]
+                    ),
+                    run_sequence(
+                        *[
+                            service.send_msg(Message(toilet_id, MessageType.FLUSH)),
+                            service.send_msg(Message(toilet_id, MessageType.CLEAN)),
+                            service.unregister_device(toilet_id),
+                        ]
+                    ),
+                ]
+            )
+        )
     )
 
 
