@@ -39,13 +39,16 @@ async def main() -> None:
     wake_up_program = [
         service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
         service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
+    ]
+
+    wake_up_program.append(
         service.send_msg(
             Message(
-                speaker_id, MessageType.PLAY_SONG,
-                "Rick Astley - Never Gonna Give You Up"
-            )
-        ),
-    ]
+                speaker_id,
+                MessageType.PLAY_SONG,
+                "Rick Astley - Never Gonna Give You Up")
+        )
+    )
 
     sleep_program = [
         service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
@@ -57,7 +60,7 @@ async def main() -> None:
     ]
 
     # run the programs
-    await run_parallel(*wake_up_program)
+    await run_sequence(*wake_up_program)
     await run_parallel(*sleep_program)
 
 
