@@ -11,12 +11,15 @@ async def main() -> None:
     service = IOTService()
 
     # create and register a few devices
-    hue_light = HueLightDevice()
-    speaker = SmartSpeakerDevice()
-    toilet = SmartToiletDevice()
-    hue_light_id = await service.register_device(hue_light)
-    speaker_id = await service.register_device(speaker)
-    toilet_id = await service.register_device(toilet)
+    devices = [HueLightDevice(), SmartSpeakerDevice(), SmartToiletDevice()]
+
+    devices_ids = await asyncio.gather(
+        *[
+            service.register_device(device) for device in devices
+        ]
+    )
+
+    hue_light_id, speaker_id, toilet_id = devices_ids
 
     await run_sequence(
         run_parallel(
