@@ -1,11 +1,22 @@
+import asyncio
 import time
+
+from typing import Any, Awaitable, List
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
 from iot.service import IOTService
 
 
-def main() -> None:
+async def run_parallel(*functions: Awaitable[Any]) -> tuple[Any]:
+    return await asyncio.gather(*functions)
+
+
+async def run_program(service: IOTService, messages: List[Message]) -> None:
+    await asyncio.to_thread(service.run_program, messages)
+
+
+async def main() -> None:
     # create an IOT service
     service = IOTService()
 
@@ -13,9 +24,16 @@ def main() -> None:
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
-    hue_light_id = service.register_device(hue_light)
-    speaker_id = service.register_device(speaker)
-    toilet_id = service.register_device(toilet)
+
+    device_ids = await run_parallel(
+        asyncio.to_thread(service.register_device, hue_light),
+        asyncio.to_thread(service.register_device, speaker),
+        asyncio.to_thread(service.register_device, toilet),
+    )
+
+    hue_light_id = device_ids[0]
+    speaker_id = device_ids[1]
+    toilet_id = device_ids[2]
 
     # create a few programs
     wake_up_program = [
@@ -32,13 +50,15 @@ def main() -> None:
     ]
 
     # run the programs
-    service.run_program(wake_up_program)
-    service.run_program(sleep_program)
+    wake_task = asyncio.create_task(run_program(service, wake_up_program))
+    sleep_task = asyncio.create_task(run_program(service, sleep_program))
+
+    await asyncio.gather(wake_task, sleep_task)
 
 
 if __name__ == "__main__":
     start = time.perf_counter()
-    main()
+    asyncio.run(main())
     end = time.perf_counter()
 
     print("Elapsed:", end - start)
