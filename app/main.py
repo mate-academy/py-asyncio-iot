@@ -1,44 +1,70 @@
+import asyncio
+import logging
 import time
+from typing import Awaitable, Any
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
 from iot.service import IOTService
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
-def main() -> None:
+
+async def run_sequence(*functions: Awaitable[Any]) -> None:
+    for function in functions:
+        await function
+
+
+async def run_parallel(*functions: Awaitable[Any]) -> None:
+    await asyncio.gather(*functions)
+
+
+async def main() -> None:
     # create an IOT service
     service = IOTService()
 
     # create and register a few devices
-    hue_light = HueLightDevice()
-    speaker = SmartSpeakerDevice()
-    toilet = SmartToiletDevice()
-    hue_light_id = service.register_device(hue_light)
-    speaker_id = service.register_device(speaker)
-    toilet_id = service.register_device(toilet)
+    hue_light_id, speaker_id, toilet_id = await asyncio.gather(
+        service.register_device(HueLightDevice()),
+        service.register_device(SmartSpeakerDevice()),
+        service.register_device(SmartToiletDevice()),
+    )
 
-    # create a few programs
-    wake_up_program = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
-    ]
+    # Wake Up Program
+    logging.info("Devices registered successfully!")
 
-    sleep_program = [
-        Message(hue_light_id, MessageType.SWITCH_OFF),
-        Message(speaker_id, MessageType.SWITCH_OFF),
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN),
-    ]
+    logging.info("Waking Up Devices...")
+    await run_parallel(
+        service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
+        service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
+    )
+    await service.send_msg(
+        Message(
+            speaker_id,
+            MessageType.PLAY_SONG,
+            "Rick Astley - Never Gonna Give You Up"
+        )
+    )
+    logging.info("Devices are awake!")
 
-    # run the programs
-    service.run_program(wake_up_program)
-    service.run_program(sleep_program)
+    logging.info("Putting Devices to Sleep...")
+    await run_parallel(
+        service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
+        service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
+    )
+    await run_sequence(
+        service.send_msg(Message(toilet_id, MessageType.FLUSH)),
+        service.send_msg(Message(toilet_id, MessageType.CLEAN)),
+    )
+    logging.info("Devices are asleep!")
 
 
 if __name__ == "__main__":
     start = time.perf_counter()
-    main()
+    asyncio.run(main())
     end = time.perf_counter()
 
-    print("Elapsed:", end - start)
+    logging.info(f"Elapsed: {end - start: .2f} seconds")
