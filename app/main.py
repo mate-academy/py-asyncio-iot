@@ -1,23 +1,28 @@
+import asyncio
 import time
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
 from iot.service import IOTService
+from typing import Any, Awaitable
 
+async def run_sequence(*functions: Awaitable[Any]) -> None:
+    for function in functions:
+        await function
 
-def main() -> None:
-    # create an IOT service
+async def run_parallel(*functions: Awaitable[Any]) -> None:
+    await asyncio.gather(*functions)
+
+async def main() -> None:
     service = IOTService()
 
-    # create and register a few devices
-    hue_light = HueLightDevice()
-    speaker = SmartSpeakerDevice()
-    toilet = SmartToiletDevice()
-    hue_light_id = service.register_device(hue_light)
-    speaker_id = service.register_device(speaker)
-    toilet_id = service.register_device(toilet)
+    hue_light, speaker, toilet = HueLightDevice(), SmartSpeakerDevice(), SmartToiletDevice()
+    hue_light_id, speaker_id, toilet_id = await asyncio.gather(
+        service.register_device(hue_light),
+        service.register_device(speaker),
+        service.register_device(toilet),
+    )
 
-    # create a few programs
     wake_up_program = [
         Message(hue_light_id, MessageType.SWITCH_ON),
         Message(speaker_id, MessageType.SWITCH_ON),
@@ -31,14 +36,29 @@ def main() -> None:
         Message(toilet_id, MessageType.CLEAN),
     ]
 
-    # run the programs
-    service.run_program(wake_up_program)
-    service.run_program(sleep_program)
+    await run_sequence(
+        run_parallel(
+            service.send_msg(wake_up_program[0]),
+            service.send_msg(wake_up_program[1])
+        ),
+        service.send_msg(wake_up_program[2])
+    )
+
+    await run_sequence(
+        run_parallel(
+            service.send_msg(sleep_program[0]),
+            service.send_msg(sleep_program[1])
+        ),
+        run_sequence(
+            service.send_msg(sleep_program[2]),
+            service.send_msg(sleep_program[3])
+        )
+    )
 
 
 if __name__ == "__main__":
     start = time.perf_counter()
-    main()
+    asyncio.run(main())
     end = time.perf_counter()
 
     print("Elapsed:", end - start)
