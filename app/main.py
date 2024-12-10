@@ -1,44 +1,51 @@
 import time
+import asyncio
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
-from iot.message import Message, MessageType
-from iot.service import IOTService
+from iot.message import MessageType
 
 
-def main() -> None:
-    # create an IOT service
-    service = IOTService()
+async def run_commands_sequence(*commands) -> None:
+    for command in commands:
+        await command
 
-    # create and register a few devices
+
+async def run_commands_parallel(*commands) -> None:
+    await asyncio.gather(*commands)
+
+
+async def main() -> None:
+
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
-    hue_light_id = service.register_device(hue_light)
-    speaker_id = service.register_device(speaker)
-    toilet_id = service.register_device(toilet)
 
-    # create a few programs
-    wake_up_program = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
-    ]
+    await run_commands_parallel(
+        hue_light.send_message(MessageType.SWITCH_ON),
+        speaker.send_message(MessageType.SWITCH_ON)
+    )
 
-    sleep_program = [
-        Message(hue_light_id, MessageType.SWITCH_OFF),
-        Message(speaker_id, MessageType.SWITCH_OFF),
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN),
-    ]
+    await run_commands_sequence(
+        speaker.send_message(
+            MessageType.PLAY_SONG,
+            "Rick Astley - Never Gonna Give You Up"
+        ),
+    )
 
-    # run the programs
-    service.run_program(wake_up_program)
-    service.run_program(sleep_program)
+    await run_commands_parallel(
+        hue_light.send_message(MessageType.SWITCH_OFF),
+        speaker.send_message(MessageType.SWITCH_OFF)
+    )
+
+    await run_commands_sequence(
+        toilet.send_message(MessageType.FLUSH),
+        toilet.send_message(MessageType.CLEAN)
+    )
 
 
 if __name__ == "__main__":
     start = time.perf_counter()
-    main()
+    asyncio.run(main())
     end = time.perf_counter()
 
     print("Elapsed:", end - start)
