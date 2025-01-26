@@ -1,4 +1,7 @@
-import time
+import asyncio
+import httpx
+
+from typing import Any, Awaitable
 
 from .message import MessageType
 
@@ -8,57 +11,66 @@ TIME_TO_SLEEP = 0.5
 
 # of course this code looks dumb, but imagine some real implementations of each method here
 class HueLightDevice:
-    def connect(self) -> None:
+    async def connect(self, url: str, client: httpx.AsyncClient) -> None:
         print("Connecting Hue Light.")
-        time.sleep(TIME_TO_SLEEP)
+        await client.get(url)
         print("Hue Light connected.")
 
-    def disconnect(self) -> None:
+    async def disconnect(self, url: str,  client: httpx.AsyncClient) -> None:
         print("Disconnecting Hue Light.")
-        time.sleep(TIME_TO_SLEEP)
+        await client.get(url)
         print("Hue Light disconnected.")
 
-    def send_message(self, message_type: MessageType, data: str = "") -> None:
+    async def send_message(self, url: str,  message_type: MessageType, client: httpx.AsyncClient, data: str = "") -> None:
         print(
             f"Hue Light handling message of type {message_type.name} with data [{data}]."
         )
-        time.sleep(TIME_TO_SLEEP)
+        await client.get(url)
         print("Hue Light received message.")
 
 
 class SmartSpeakerDevice:
-    def connect(self) -> None:
+    async def connect(self, url: str,  client: httpx.AsyncClient) -> None:
         print("Connecting to Smart Speaker.")
-        time.sleep(TIME_TO_SLEEP)
+        await client.get(url)
         print("Smart Speaker connected.")
 
-    def disconnect(self) -> None:
+    async def disconnect(self, url: str,  client: httpx.AsyncClient) -> None:
         print("Disconnecting Smart Speaker.")
-        time.sleep(TIME_TO_SLEEP)
+        await client.get(url)
         print("Smart Speaker disconnected.")
 
-    def send_message(self, message_type: MessageType, data: str = "") -> None:
+    async def send_message(self, message_type: MessageType, url: str,  client: httpx.AsyncClient, data: str = "") -> None:
         print(
             f"Smart Speaker handling message of type {message_type.name} with data [{data}]."
         )
-        time.sleep(TIME_TO_SLEEP)
+        await client.get(url)
         print("Smart Speaker received message.")
 
 
 class SmartToiletDevice:
-    def connect(self) -> None:
+    async def connect(self, url: str,  client: httpx.AsyncClient) -> None:
         print("Connecting to Smart Toilet.")
-        time.sleep(TIME_TO_SLEEP)
+        await client.get(url)
         print("Smart Toilet connected.")
 
-    def disconnect(self) -> None:
+    async def disconnect(self, url: str,  client: httpx.AsyncClient) -> None:
         print("Disconnecting Smart Toilet.")
-        time.sleep(TIME_TO_SLEEP)
+        await client.get(url)
         print("Smart Toilet disconnected.")
 
-    def send_message(self, message_type: MessageType, data: str = "") -> None:
+    async def send_message(self, message_type: MessageType, url: str,  client: httpx.AsyncClient, data: str = "") -> None:
         print(
             f"Smart Toilet handling message of type {message_type.name} with data [{data}]."
         )
-        time.sleep(TIME_TO_SLEEP)
+        await client.get(url)
         print("Smart Toilet received message.")
+
+
+async def run_sequence(*functions: Awaitable[Any]) -> None:
+    for function in functions:
+        await function
+
+
+async def run_parallel(*functions: Awaitable[Any]) -> None:
+    await asyncio.gather(*functions)
