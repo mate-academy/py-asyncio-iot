@@ -2,7 +2,6 @@ import random
 import string
 from typing import Protocol
 
-import asyncio
 
 from .message import Message, MessageType
 
@@ -12,10 +11,12 @@ def generate_id(length: int = 8) -> str:
 
 
 # Protocol is very similar to ABC, but uses duck typing
-# so devices should not inherit for it (if it walks like a duck, and quacks like a duck, it's a duck)
+# so devices should not inherit for it
+# (if it walks like a duck, and quacks like a duck, it's a duck)
 class Device(Protocol):
     async def connect(self) -> None:
-        ...  # Ellipsis - similar to "pass", but sometimes has different meaning
+        ...
+        # Ellipsis - similar to "pass", but sometimes has different meaning
 
     async def disconnect(self) -> None:
         ...

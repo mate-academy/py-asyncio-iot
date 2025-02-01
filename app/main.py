@@ -23,17 +23,16 @@ async def main() -> None:
         service.register_device(toilet),
     )
 
-    async def run_sequence(*functions: Awaitable[Any]) -> None:
-        for function in functions:
-            await function
-
     async def run_parallel(*functions: Awaitable[Any]) -> None:
         await asyncio.gather(*functions)
     # create a few programs
     wake_up_program = [
         Message(hue_light_id, MessageType.SWITCH_ON),
         Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
+        Message(
+            speaker_id,
+            MessageType.PLAY_SONG,
+            "Rick Astley - Never Gonna Give You Up"),
     ]
 
     sleep_program = [
