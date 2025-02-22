@@ -8,4 +8,6 @@ async def run_sequence(*functions: Awaitable[Any]) -> None:
 
 
 async def run_parallel(*functions: Awaitable[Any]) -> None:
+    print("=====RUNNING PROGRAM======")
     await asyncio.gather(*functions)
+    print("=====END OF PROGRAM======")
