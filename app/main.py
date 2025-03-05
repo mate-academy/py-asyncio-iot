@@ -24,7 +24,8 @@ async def main() -> None:
         Message(hue_light_id, MessageType.SWITCH_ON),
         Message(speaker_id, MessageType.SWITCH_ON),
         Message(
-            speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"
+            speaker_id, MessageType.PLAY_SONG,
+            "Rick Astley - Never Gonna Give You Up"
         ),
     ]
 
@@ -36,15 +37,18 @@ async def main() -> None:
     ]
 
     await run_parallel(
-        service.send_msg(wake_up_program[0]), service.send_msg(wake_up_program[1])
+        service.send_msg(wake_up_program[0]),
+        service.send_msg(wake_up_program[1])
     )
     await run_sequence(service.send_msg(wake_up_program[2]))
 
     await run_parallel(
-        service.send_msg(sleep_program[0]), service.send_msg(sleep_program[1])
+        service.send_msg(sleep_program[0]),
+        service.send_msg(sleep_program[1])
     )
     await run_sequence(
-        service.send_msg(sleep_program[2]), service.send_msg(sleep_program[3])
+        service.send_msg(sleep_program[2]),
+        service.send_msg(sleep_program[3])
     )
 
 
