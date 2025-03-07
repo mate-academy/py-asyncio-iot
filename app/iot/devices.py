@@ -22,7 +22,7 @@ class HueLightDevice:
             f"Hue Light handling message of type {message_type.name} with data [{data}]."
         )
         await asyncio.sleep(TIME_TO_SLEEP)
-        print("Hue Light received message.")
+        print(f"Hue Light received message of type {message_type.name} with data [{data}].")
 
 
 class SmartSpeakerDevice:
@@ -41,7 +41,7 @@ class SmartSpeakerDevice:
             f"Smart Speaker handling message of type {message_type.name} with data [{data}]."
         )
         await asyncio.sleep(TIME_TO_SLEEP)
-        print("Smart Speaker received message.")
+        print(f"Smart Speaker received message of type {message_type.name} with data [{data}].")
 
 
 class SmartToiletDevice:
@@ -60,4 +60,4 @@ class SmartToiletDevice:
             f"Smart Toilet handling message of type {message_type.name} with data [{data}]."
         )
         await asyncio.sleep(TIME_TO_SLEEP)
-        print("Smart Toilet received message.")
+        print(f"Smart Toilet received message of type {message_type.name} with data [{data}].")
