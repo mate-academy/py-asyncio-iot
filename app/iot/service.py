@@ -65,7 +65,9 @@ class IOTService:
                 self.run_sequence(*(self.send_msg(msg) for msg in flush_clean))
             )
         else:
-            await asyncio.gather(*(self.send_msg(msg) for msg in other_commands))
+            await asyncio.gather(
+                *(self.send_msg(msg) for msg in other_commands)
+            )
         print("=====END OF PROGRAM======")
 
     async def send_msg(self, msg: Message) -> None:
