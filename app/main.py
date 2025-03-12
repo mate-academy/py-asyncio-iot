@@ -1,44 +1,66 @@
+import asyncio
 import time
-
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
-from iot.service import IOTService
+from iot.service import IOTService, run_sequence, run_parallel
 
 
-def main() -> None:
-    # create an IOT service
+async def main() -> None:
     service = IOTService()
 
-    # create and register a few devices
-    hue_light = HueLightDevice()
-    speaker = SmartSpeakerDevice()
-    toilet = SmartToiletDevice()
-    hue_light_id = service.register_device(hue_light)
-    speaker_id = service.register_device(speaker)
-    toilet_id = service.register_device(toilet)
+    hue_light_id, speaker_id, toilet_id = await asyncio.gather(
+        service.register_device(HueLightDevice()),
+        service.register_device(SmartSpeakerDevice()),
+        service.register_device(SmartToiletDevice()),
+    )
 
-    # create a few programs
-    wake_up_program = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
-    ]
+    programs = {
+        "wake_up": [
+            {
+                "mode": "parallel",
+                "msgs": [
+                    Message(hue_light_id, MessageType.SWITCH_ON),
+                    Message(speaker_id, MessageType.SWITCH_ON),
+                ],
+            },
+            {
+                "mode": "sequence",
+                "msgs": [
+                    Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
+                ],
+            },
+        ],
+        "sleep": [
+            {
+                "mode": "parallel",
+                "msgs": [
+                    Message(hue_light_id, MessageType.SWITCH_OFF),
+                    Message(speaker_id, MessageType.SWITCH_OFF),
+                ],
+            },
+            {
+                "mode": "sequence",
+                "msgs": [
+                    Message(toilet_id, MessageType.FLUSH),
+                    Message(toilet_id, MessageType.CLEAN),
+                ],
+            },
+        ],
+    }
 
-    sleep_program = [
-        Message(hue_light_id, MessageType.SWITCH_OFF),
-        Message(speaker_id, MessageType.SWITCH_OFF),
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN),
-    ]
+    async def run_program(program):
+        for group in program:
+            if group["mode"] == "parallel":
+                await run_parallel(*(service.send_msg(msg) for msg in group["msgs"]))
+            elif group["mode"] == "sequence":
+                await run_sequence(*(service.send_msg(msg) for msg in group["msgs"]))
 
-    # run the programs
-    service.run_program(wake_up_program)
-    service.run_program(sleep_program)
+    await run_program(programs["wake_up"])
+    await run_program(programs["sleep"])
 
 
 if __name__ == "__main__":
     start = time.perf_counter()
-    main()
+    asyncio.run(main())
     end = time.perf_counter()
-
     print("Elapsed:", end - start)
