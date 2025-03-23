@@ -51,7 +51,7 @@ async def main() -> None:
             Message(toilet_id, MessageType.FLUSH)),
         service.send_msg(
             Message(toilet_id, MessageType.CLEAN))
-        )
+    )
 
 if __name__ == "__main__":
     start = time.perf_counter()
