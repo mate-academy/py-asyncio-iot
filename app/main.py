@@ -7,7 +7,6 @@ from iot.service import IOTService
 
 
 async def main() -> None:
-    # create an IOT service
     service = IOTService()
 
     # create devices
