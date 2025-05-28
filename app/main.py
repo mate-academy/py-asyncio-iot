@@ -6,7 +6,6 @@ from iot.service import IOTService
 
 
 def main() -> None:
-    # create an IOT service
     service = IOTService()
 
     # create and register a few devices
