@@ -1,44 +1,76 @@
+import asyncio
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
 from iot.service import IOTService
 
+from typing import Any, Awaitable
 
-def main() -> None:
-    # create an IOT service
+
+async def run_sequence(*functions: Awaitable[Any]) -> None:
+    for func in functions:
+        await func
+
+
+async def run_parallel(*functions: Awaitable[Any]) -> None:
+    await asyncio.gather(*functions)
+
+
+# Обгортка для синхронного виклику send_msg
+def sync_send(service: IOTService, msg: Message) -> None:
+    service.send_msg(msg)
+
+
+async def async_send(service: IOTService, msg: Message, executor: ThreadPoolExecutor) -> None:
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(executor, sync_send, service, msg)
+
+
+async def main_async():
     service = IOTService()
+    executor = ThreadPoolExecutor()
 
-    # create and register a few devices
+    # Реєстрація пристроїв — синхронна
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
+
     hue_light_id = service.register_device(hue_light)
     speaker_id = service.register_device(speaker)
     toilet_id = service.register_device(toilet)
 
-    # create a few programs
-    wake_up_program = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
-    ]
+    # Wake-up: вмикаємо лампу + колонку паралельно, потім грає музика
+    await run_sequence(
+        run_parallel(
+            async_send(service, Message(hue_light_id, MessageType.SWITCH_ON), executor),
+            async_send(service, Message(speaker_id, MessageType.SWITCH_ON), executor),
+        ),
+        async_send(service, Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"), executor),
+    )
 
-    sleep_program = [
-        Message(hue_light_id, MessageType.SWITCH_OFF),
-        Message(speaker_id, MessageType.SWITCH_OFF),
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN),
-    ]
+    # Sleep: вимикаємо лампу + колонку паралельно, потім flush → clean
+    await run_sequence(
+        run_parallel(
+            async_send(service, Message(hue_light_id, MessageType.SWITCH_OFF), executor),
+            async_send(service, Message(speaker_id, MessageType.SWITCH_OFF), executor),
+        ),
+        run_sequence(
+            async_send(service, Message(toilet_id, MessageType.FLUSH), executor),
+            async_send(service, Message(toilet_id, MessageType.CLEAN), executor),
+        ),
+    )
 
-    # run the programs
-    service.run_program(wake_up_program)
-    service.run_program(sleep_program)
+    executor.shutdown(wait=True)
+
+
+def main():
+    start = time.perf_counter()
+    asyncio.run(main_async())
+    end = time.perf_counter()
+    print("Elapsed:", end - start)
 
 
 if __name__ == "__main__":
-    start = time.perf_counter()
     main()
-    end = time.perf_counter()
-
-    print("Elapsed:", end - start)
