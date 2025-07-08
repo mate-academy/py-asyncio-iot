@@ -1,6 +1,5 @@
 import random
 import string
-import asyncio
 from typing import Protocol
 from .message import Message, MessageType
 
@@ -24,8 +23,8 @@ class IOTService:
     def __init__(self) -> None:
         self.devices: dict[str, Device] = {}
 
-    def register_device(self, device: Device) -> str:
-        # лишається sync
+    async def register_device(self, device: Device) -> str:
+        await device.connect()
         device_id = generate_id()
         self.devices[device_id] = device
         return device_id
@@ -39,5 +38,4 @@ class IOTService:
 
     async def send_msg(self, msg: Message) -> None:
         device = self.devices[msg.device_id]
-        await device.connect()
         await device.send_message(msg.msg_type, msg.data or "")

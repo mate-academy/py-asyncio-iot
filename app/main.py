@@ -20,17 +20,16 @@ async def run_parallel(*functions: Awaitable[Any]) -> None:
 async def main_async():
     service = IOTService()
 
-    # створення девайсів
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
 
-    # sync реєстрація
-    hue_light_id = service.register_device(hue_light)
-    speaker_id = service.register_device(speaker)
-    toilet_id = service.register_device(toilet)
+    hue_light_id, speaker_id, toilet_id = await asyncio.gather(
+        service.register_device(hue_light),
+        service.register_device(speaker),
+        service.register_device(toilet),
+    )
 
-    # Wake-up логіка: вмикання світла і колонки паралельно, потім музика
     await run_sequence(
         run_parallel(
             service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
@@ -39,7 +38,6 @@ async def main_async():
         service.send_msg(Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"))
     )
 
-    # Sleep логіка: вимкнення світла і колонки паралельно, потім flush → clean
     await run_sequence(
         run_parallel(
             service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
