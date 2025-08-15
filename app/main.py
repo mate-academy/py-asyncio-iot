@@ -25,7 +25,9 @@ async def main() -> None:
     toilet = SmartToiletDevice()
     device_list = [hue_light, speaker, toilet]
     def_list = [service.register_device(device) for device in device_list]
-    hue_light_id, speaker_id, toilet_id = await run_parallel(*def_list)
+    hue_light_id, speaker_id, toilet_id = await run_parallel(
+        *def_list
+    )
 
     wake_up_program = [
         Message(hue_light_id, MessageType.SWITCH_ON),
@@ -41,17 +43,20 @@ async def main() -> None:
         Message(toilet_id, MessageType.CLEAN),
     ]
 
-    await run_sequence(run_parallel(
-        service.send_msg(wake_up_program[0]),
-        service.send_msg(wake_up_program[1]),
-    ),
+    await run_sequence(
+        run_parallel(
+            service.send_msg(wake_up_program[0]),
+            service.send_msg(wake_up_program[1]),
+        ),
         service.send_msg(wake_up_program[2]),
     )
-    await run_sequence(run_parallel(
-        service.send_msg(sleep_program[0]),
-        service.send_msg(sleep_program[1]),
-        service.send_msg(sleep_program[2]),
-    ),
+
+    await run_sequence(
+        run_parallel(
+            service.send_msg(sleep_program[0]),
+            service.send_msg(sleep_program[1]),
+            service.send_msg(sleep_program[2]),
+        ),
         service.send_msg(sleep_program[3]),
     )
 

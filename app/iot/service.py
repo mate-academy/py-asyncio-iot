@@ -1,3 +1,4 @@
+import asyncio
 import random
 import string
 from typing import Protocol
@@ -21,7 +22,8 @@ class Device(Protocol):
         ...
 
     async def send_message(self, message_type: MessageType, data: str) -> None:
-        ...
+        await asyncio.sleep(1)
+        print(f"HueLight: {message_type}, {data}")
 
 
 class IOTService:
