@@ -1,7 +1,7 @@
 import asyncio
 import random
 import string
-from typing import Protocol
+from typing import Protocol, List
 
 from .message import Message, MessageType
 
@@ -30,11 +30,13 @@ class IOTService:
     def __init__(self) -> None:
         self.devices: dict[str, Device] = {}
 
-    async def register_device(self, device: Device) -> str:
+    async def register_device(self, device_id: str, device: Device) -> str:
         await device.connect()
-        device_id = generate_id()
         self.devices[device_id] = device
         return device_id
+
+    async def register_devices(self, devices: list[tuple[str, Device]]) -> None:
+        await asyncio.gather(*(self.register_device(device_id, d) for device_id, d in devices))
 
     async def unregister_device(self, device_id: str) -> None:
         await self.devices[device_id].disconnect()

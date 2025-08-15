@@ -23,17 +23,19 @@ async def main() -> None:
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
-    device_list = [hue_light, speaker, toilet]
-    def_list = [service.register_device(device) for device in device_list]
-    hue_light_id, speaker_id, toilet_id = await run_parallel(
-        *def_list
-    )
+
+    def_list = [
+        service.register_device("hue_light", hue_light),
+        service.register_device("speaker", speaker),
+        service.register_device("toilet", toilet),
+    ]
+
+    hue_light_id, speaker_id, toilet_id = await run_parallel(*def_list)
 
     wake_up_program = [
         Message(hue_light_id, MessageType.SWITCH_ON),
         Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG,
-                "Rick Astley - Never Gonna Give You Up"),
+        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
     ]
 
     sleep_program = [
