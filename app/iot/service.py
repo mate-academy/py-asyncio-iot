@@ -3,6 +3,7 @@ import random
 import string
 from typing import Protocol, Awaitable, Any
 
+from .devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from .message import Message, MessageType
 
 
@@ -49,3 +50,13 @@ class IOTService:
 
     async def run_parallel(*functions: Awaitable[Any]) -> None:
         await asyncio.gather(*functions)
+
+    async def register_devices(self):
+        hue_light = HueLightDevice()
+        speaker = SmartSpeakerDevice()
+        toilet = SmartToiletDevice()
+        hue_light_id, speaker_id, toilet_id = await asyncio.gather(
+            self.register_device(hue_light),
+            self.register_device(speaker),
+            self.register_device(toilet)
+        )
