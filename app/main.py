@@ -6,7 +6,6 @@ from iot.message import Message, MessageType
 from iot.service import IOTService
 from typing import Any, Awaitable
 
-
 service = IOTService()
 
 
@@ -20,46 +19,33 @@ async def run_parallel(*messages: Awaitable[Any]) -> None:
 
 
 async def main() -> None:
-
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
 
-    hue_light_id_cor = asyncio.create_task(service.register_device(hue_light))
-    speaker_id_cor = asyncio.create_task(service.register_device(speaker))
-    toilet_id_cor = asyncio.create_task(service.register_device(toilet))
+    hue_light_id, speaker_id, toilet_id = await asyncio.gather(
+        service.register_device(hue_light),
+        service.register_device(speaker),
+        service.register_device(toilet)
+    )
 
-    hue_light_id = await hue_light_id_cor
-    speaker_id = await speaker_id_cor
-    toilet_id = await toilet_id_cor
-
-    wake_up_program = [
-        run_parallel(
-            Message(hue_light_id, MessageType.SWITCH_ON),
-            Message(speaker_id, MessageType.SWITCH_ON)
+    await run_parallel(
+        Message(hue_light_id, MessageType.SWITCH_ON),
+        Message(speaker_id, MessageType.SWITCH_ON)
+    ),
+    await run_sequence(
+        Message(
+            speaker_id, MessageType.PLAY_SONG,
+            "Rick Astley - Never Gonna Give You Up"
         ),
-        run_sequence(
-            Message(
-                speaker_id, MessageType.PLAY_SONG,
-                "Rick Astley - Never Gonna Give You Up"
-            ),
-        )
-    ]
+    )
 
-    sleep_program = [
-        run_sequence(
-            Message(toilet_id, MessageType.FLUSH),
-            Message(toilet_id, MessageType.CLEAN),
-            Message(speaker_id, MessageType.SWITCH_OFF),
-            Message(hue_light_id, MessageType.SWITCH_OFF),
-        )
-    ]
-
-    for program in wake_up_program:
-        await program
-
-    for program in sleep_program:
-        await program
+    await run_sequence(
+        Message(toilet_id, MessageType.FLUSH),
+        Message(toilet_id, MessageType.CLEAN),
+        Message(speaker_id, MessageType.SWITCH_OFF),
+        Message(hue_light_id, MessageType.SWITCH_OFF),
+    )
 
 
 if __name__ == "__main__":
