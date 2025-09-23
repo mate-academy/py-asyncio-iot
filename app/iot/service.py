@@ -22,13 +22,6 @@ class Device(Protocol):
     async def send_message(self, message_type: MessageType, data: str) -> None:
         ...
 
-    async def run_sequence(*functions: Awaitable[Any]) -> None:
-        for func in functions:
-            await func
-
-    async def run_parallel(*functions: Awaitable[Any]) -> None:
-        await asyncio.gather(*functions)
-
 
 class IOTService:
     def __init__(self) -> None:
