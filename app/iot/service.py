@@ -22,6 +22,13 @@ class Device(Protocol):
     async def send_message(self, message_type: MessageType, data: str) -> None:
         ...
 
+    async def run_sequence(*functions: Awaitable[Any]) -> None:
+        for func in functions:
+            await func
+
+    async def run_parallel(*functions: Awaitable[Any]) -> None:
+        await asyncio.gather(*functions)
+
 
 class IOTService:
     def __init__(self) -> None:
@@ -40,12 +47,6 @@ class IOTService:
             )
         )
 
-    async def run_sequence(*functions: Awaitable[Any]) -> None:
-        for func in functions:
-            await func
-
-    async def run_parallel(*functions: Awaitable[Any]) -> None:
-        await asyncio.gather(*functions)
 
     async def unregister_device(self, device_id: str) -> None:
         if device_id not in self.devices:

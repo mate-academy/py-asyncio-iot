@@ -4,7 +4,7 @@ from app.iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevic
 from app.iot.message import Message, MessageType
 from app.iot.service import IOTService, run_parallel, run_sequence
 
-async def main() -> None:
+async def main_async() -> None:
     # create an IOT service
     service = IOTService()
 
