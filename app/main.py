@@ -1,8 +1,8 @@
 import asyncio
 import time
 
-from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
-from iot.message import Message, MessageType
+from app.iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
+from app.iot.message import Message, MessageType
 from app.iot.service import IOTService, run_parallel, run_sequence
 
 
