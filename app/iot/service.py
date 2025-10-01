@@ -1,4 +1,3 @@
-import asyncio
 import random
 import string
 from typing import Protocol
@@ -41,8 +40,6 @@ class IOTService:
 
     async def run_program(self, program: list[Message]) -> None:
         print("=====RUNNING PROGRAM======")
-        tasks = [self.send_msg(msg) for msg in program]
-        await asyncio.gather(*tasks)
         print("=====END OF PROGRAM======")
 
     async def send_msg(self, msg: Message) -> None:

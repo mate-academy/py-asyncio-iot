@@ -79,7 +79,3 @@ async def main() -> None:
         run_device(speaker_device, MessageType.PLAY_SONG, "Play music"),
         run_device(toilet_device, MessageType.FLUSH, "Flush"),
     )
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
