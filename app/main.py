@@ -62,11 +62,11 @@ async def main() -> None:
         run_sequence(
             service.send_msg(Message(
                 toilet_id,
-                MessageType.CLEAN
+                MessageType.FLUSH
             )),
             service.send_msg(Message(
                 toilet_id,
-                MessageType.FLUSH
+                MessageType.CLEAN
             )),
         )
     )
