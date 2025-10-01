@@ -1,6 +1,6 @@
 import random
 import string
-from typing import Protocol
+from typing import Protocol, Awaitable, Any
 
 import asyncio
 
@@ -29,7 +29,16 @@ class IOTService:
         self.devices: dict[str, Device] = {}
 
     @staticmethod
-    def create_steps(program: list[Message]):
+    async def run_sequence(*functions: Awaitable[Any]):
+        for function in functions:
+            await function
+
+    @staticmethod
+    async def run_parallel(*functions: Awaitable[Any]):
+        await asyncio.gather(*functions)
+
+    @staticmethod
+    def create_device_programs(program: list[Message]):
         device_programs = {}
         max_steps = 0
         for msg in program:
@@ -37,10 +46,7 @@ class IOTService:
                 device_programs[msg.device_id] = []
             device_programs[msg.device_id].append(msg)
             max_steps = max(max_steps, len(device_programs[msg.device_id]))
-        return [
-            [msgs[i] for msgs in device_programs.values() if i < len(msgs)]
-            for i in range(max_steps)
-        ]
+        return device_programs
 
     async def register_device(self, device: Device) -> str:
         await device.connect()
@@ -57,9 +63,11 @@ class IOTService:
 
     async def run_program(self, program: list[Message]) -> None:
         print("=====RUNNING PROGRAM======")
-        steps = self.create_steps(program)
-        for step in steps:
-            await asyncio.gather(*[self.send_msg(msg) for msg in step])
+        device_programs = self.create_device_programs(program)
+        await self.run_parallel(*[
+            self.run_sequence(*[self.send_msg(msg) for msg in device_program])
+            for device_program in device_programs.values()
+        ])
         print("=====END OF PROGRAM======")
 
     async def send_msg(self, msg: Message) -> None:
