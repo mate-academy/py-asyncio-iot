@@ -40,12 +40,10 @@ class IOTService:
     @staticmethod
     def create_device_programs(program: list[Message]):
         device_programs = {}
-        max_steps = 0
         for msg in program:
             if not msg.device_id in device_programs:
                 device_programs[msg.device_id] = []
             device_programs[msg.device_id].append(msg)
-            max_steps = max(max_steps, len(device_programs[msg.device_id]))
         return device_programs
 
     async def register_device(self, device: Device) -> str:
