@@ -1,4 +1,3 @@
-import asyncio
 import random
 import string
 from typing import Protocol
@@ -34,11 +33,17 @@ class IOTService:
         return device_id
 
     async def unregister_device(self, device_id: str) -> None:
+        if device_id not in self.devices:
+            raise KeyError(f"Device id {device_id!r} not registered")
         await self.devices[device_id].disconnect()
         del self.devices[device_id]
 
     def get_device(self, device_id: str) -> Device:
+        if device_id not in self.devices:
+            raise KeyError(f"Device id {device_id!r} not registered")
         return self.devices[device_id]
 
     async def send_msg(self, msg: Message) -> None:
+        if msg.device_id not in self.devices:
+            raise KeyError(f"Device id {msg.device_id!r} not registered")
         await self.devices[msg.device_id].send_message(msg.msg_type, msg.data)
