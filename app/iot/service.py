@@ -1,7 +1,7 @@
 import asyncio
 import random
 import string
-from typing import Protocol, Awaitable, Any
+from typing import Any, Awaitable, Protocol
 
 from .message import Message, MessageType
 
