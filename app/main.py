@@ -23,27 +23,20 @@ async def main() -> None:
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
 
-    async def register(dev) -> str:
-        return service.register_device(dev)
-
     ids = await run_parallel(
-        register(hue_light),
-        register(speaker),
-        register(toilet),
+        service.register_device(hue_light),
+        service.register_device(speaker),
+        service.register_device(toilet),
     )
     hue_light_id, speaker_id, toilet_id = ids
 
     print("\n--- Wake up program ---")
-
-    async def run(messages) -> None:
-        return service.run_program(messages)
-
     await run_sequence(
         run_parallel(
-            run([Message(hue_light_id, MessageType.SWITCH_ON)]),
-            run([Message(speaker_id, MessageType.SWITCH_ON)]),
+            service.run_program([Message(hue_light_id, MessageType.SWITCH_ON)]),
+            service.run_program([Message(speaker_id, MessageType.SWITCH_ON)]),
         ),
-        run([
+        service.run_program([
             Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up")
         ]),
     )
@@ -51,12 +44,12 @@ async def main() -> None:
     print("\n--- Sleep program ---")
     await run_parallel(
         run_sequence(
-            run([Message(toilet_id, MessageType.FLUSH)]),
-            run([Message(toilet_id, MessageType.CLEAN)]),
+            service.run_program([Message(toilet_id, MessageType.FLUSH)]),
+            service.run_program([Message(toilet_id, MessageType.CLEAN)]),
         ),
         run_parallel(
-            run([Message(hue_light_id, MessageType.SWITCH_OFF)]),
-            run([Message(speaker_id, MessageType.SWITCH_OFF)]),
+            service.run_program([Message(hue_light_id, MessageType.SWITCH_OFF)]),
+            service.run_program([Message(speaker_id, MessageType.SWITCH_OFF)]),
         ),
     )
 
