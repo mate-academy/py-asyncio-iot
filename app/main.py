@@ -31,6 +31,7 @@ async def main() -> None:
     hue_light_id, speaker_id, toilet_id = registered
 
     # create and run few programs
+    print("=====RUNNING PROGRAM======")
     await run_parallel(
         run_sequence(
             service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
@@ -46,8 +47,9 @@ async def main() -> None:
         service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
         service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
     )
+    print("=====END OF PROGRAM======")
     await asyncio.gather(*(
-        service.unregister_device(obj) for obj in objects
+        service.unregister_device(id) for id in registered
     ))
 
 
