@@ -1,28 +1,26 @@
-import time
 import asyncio
-
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
 from iot.service import IOTService
+import time
 
-
-async def main() -> None:
-    # create an IOT service
+async def main():
     service = IOTService()
 
-    # create and register a few devices
+    # create device instances
     hue_light = HueLightDevice()
     speaker = SmartSpeakerDevice()
     toilet = SmartToiletDevice()
-    hue_light_id = await service.register_device(hue_light)
-    speaker_id = await service.register_device(speaker)
-    toilet_id = await service.register_device(toilet)
 
-    # create a few programs
+    # register all concurrently
+    device_ids = await service.register_devices([hue_light, speaker, toilet])
+    hue_light_id, speaker_id, toilet_id = device_ids
+
+    # define programs
     wake_up_program = [
         Message(hue_light_id, MessageType.SWITCH_ON),
         Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
+        Message(speaker_id, MessageType.PLAY_SONG, "Never Gonna Give You Up"),
     ]
 
     sleep_program = [
@@ -32,11 +30,15 @@ async def main() -> None:
         Message(toilet_id, MessageType.CLEAN),
     ]
 
-    # run the programs
+    # run both programs concurrently
     await asyncio.gather(
         service.run_program(wake_up_program),
         service.run_program(sleep_program),
     )
+
+    # disconnect all devices
+    await service.unregister_all()
+
 
 if __name__ == "__main__":
     start = time.perf_counter()
