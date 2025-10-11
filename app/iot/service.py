@@ -1,6 +1,7 @@
 import random
 import string
-from typing import Protocol
+import asyncio
+from typing import Protocol, Dict
 
 from .message import Message, MessageType
 
@@ -21,10 +22,6 @@ class Device(Protocol):
     async def send_message(self, message_type: MessageType, data: str) -> None:
         ...
 
-
-import asyncio
-from typing import Dict
-from .message import Message
 
 
 class IOTService:
@@ -54,6 +51,12 @@ class IOTService:
         return self.devices[device_id]
 
     async def run_program(self, program: list[Message]) -> None:
+        """
+        WARNING: This method runs all messages concurrently.
+        Use only for messages that do NOT require specific ordering.
+        For flows that require ordering (e.g., wake-up or sleep flows),
+        use explicit run_sequence / run_parallel in main.py.
+        """
         print("===== RUNNING PROGRAM =====")
         await asyncio.gather(*(self.send_msg(msg) for msg in program))
         print("===== END OF PROGRAM =====")
