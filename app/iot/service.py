@@ -2,7 +2,7 @@ import asyncio
 import random
 import string
 from collections import defaultdict
-from typing import Protocol, Awaitable
+from typing import Protocol
 
 from .message import Message, MessageType
 
@@ -17,7 +17,7 @@ class Device(Protocol):
     async def connect(self) -> None:
         ...  # Ellipsis - similar to "pass", but sometimes has different meaning
 
-    def disconnect(self) -> None:
+    async def disconnect(self) -> None:
         ...
 
     async def send_message(self, message_type: MessageType, data: str) -> None:
@@ -37,8 +37,8 @@ class IOTService:
     async def register_many(self, devices):
         return await asyncio.gather(*(self.register_device(d) for d in devices))
 
-    def unregister_device(self, device_id: str) -> None:
-        self.devices[device_id].disconnect()
+    async def unregister_device(self, device_id: str) -> None:
+        await self.devices[device_id].disconnect()
         del self.devices[device_id]
 
     def get_device(self, device_id: str) -> Device:

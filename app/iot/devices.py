@@ -1,5 +1,5 @@
-import time
 import asyncio
+
 from .message import MessageType
 
 TIME_TO_SLEEP = 0.5
