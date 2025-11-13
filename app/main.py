@@ -32,20 +32,21 @@ async def main() -> None:
     ]
     ids = await asyncio.gather(*coros)
 
-    await run_sequence(
-        service.send_msg(Message(ids[0], MessageType.SWITCH_ON)),
-        service.send_msg(Message(ids[0], MessageType.SWITCH_OFF)),
-    )
     await run_parallel(
-        service.send_msg(Message(ids[1], MessageType.SWITCH_ON)),
-        service.send_msg(Message(ids[1], MessageType.SWITCH_ON)),
-        service.send_msg(
-            Message(
-                ids[2], MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"
-            )
+        run_sequence(
+            service.send_msg(Message(ids[1], MessageType.SWITCH_ON)),
+            service.send_msg(
+                Message(
+                    ids[1],
+                    MessageType.PLAY_SONG,
+                    "Rick Astley - Never Gonna Give You Up",
+                )
+            ),
         ),
-        service.send_msg(Message(ids[2], MessageType.FLUSH)),
-        service.send_msg(Message(ids[2], MessageType.CLEAN)),
+        run_sequence(
+            service.send_msg(Message(ids[2], MessageType.FLUSH)),
+            service.send_msg(Message(ids[2], MessageType.CLEAN)),
+        ),
     )
 
 
