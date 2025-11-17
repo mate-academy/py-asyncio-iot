@@ -7,6 +7,15 @@ from iot.service import IOTService
 from typing import Any, Awaitable
 
 
+async def run_sequence(*sequence_program: Awaitable[Any]) -> None:
+    for function in sequence_program:
+        await function
+
+
+async def run_parallel(*parallel_program: Awaitable[Any]) -> None:
+    await asyncio.gather(*parallel_program)
+
+
 async def main() -> None:
     # create an IOT service
     service = IOTService()
@@ -23,34 +32,19 @@ async def main() -> None:
 
     id_hue_light, id_speaker, id_toilet = results
 
-    parallel_up_program = [
-        Message(id_hue_light, MessageType.SWITCH_ON),
-        Message(id_speaker, MessageType.SWITCH_ON),
-        Message(
-            id_toilet, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"
-        ),
-        Message(id_hue_light, MessageType.SWITCH_OFF),
-        Message(id_speaker, MessageType.SWITCH_OFF),
-    ]
-    parallel_program = [service.send_msg(msg) for msg in parallel_up_program]
-
-    sequence_programs = [
-        Message(id_toilet, MessageType.FLUSH),
-        Message(id_toilet, MessageType.CLEAN),
-    ]
-    sequence_program = [service.send_msg(msg) for msg in sequence_programs]
-
-    # run the programs
-    async def run_sequence(*sequence_program: Awaitable[Any]) -> None:
-        for function in sequence_program:
-            await function
-
-    async def run_parallel(*parallel_program: Awaitable[Any]) -> None:
-        await asyncio.gather(*parallel_program)
-
-
-    await run_sequence(*sequence_program)
-    await run_parallel(*parallel_program)
+    await run_parallel(
+        service.send_msg(Message(id_hue_light, MessageType.SWITCH_ON)),
+        service.send_msg(Message(id_speaker, MessageType.SWITCH_ON)),
+    )
+    await run_sequence(
+        service.send_msg(Message(id_toilet, MessageType.FLUSH)),
+        service.send_msg(Message(id_toilet, MessageType.CLEAN)),
+        service.send_msg(Message(id_toilet, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up")),
+    )
+    await run_parallel(
+        service.send_msg(Message(id_hue_light, MessageType.SWITCH_OFF)),
+        service.send_msg(Message(id_speaker, MessageType.SWITCH_OFF)),
+    )
 
 
 if __name__ == "__main__":
