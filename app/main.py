@@ -1,11 +1,22 @@
+import asyncio
 import time
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
 from iot.service import IOTService
+from typing import Any, Awaitable
 
 
-def main() -> None:
+async def run_sequence(*sequence_program: Awaitable[Any]) -> None:
+    for function in sequence_program:
+        await function
+
+
+async def run_parallel(*parallel_program: Awaitable[Any]) -> None:
+    await asyncio.gather(*parallel_program)
+
+
+async def main() -> None:
     # create an IOT service
     service = IOTService()
 
@@ -17,28 +28,30 @@ def main() -> None:
     speaker_id = service.register_device(speaker)
     toilet_id = service.register_device(toilet)
 
-    # create a few programs
-    wake_up_program = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
-    ]
+    results = await asyncio.gather(hue_light_id, speaker_id, toilet_id)
 
-    sleep_program = [
-        Message(hue_light_id, MessageType.SWITCH_OFF),
-        Message(speaker_id, MessageType.SWITCH_OFF),
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN),
-    ]
+    id_hue_light, id_speaker, id_toilet = results
 
-    # run the programs
-    service.run_program(wake_up_program)
-    service.run_program(sleep_program)
+    await run_parallel(
+        service.send_msg(Message(id_hue_light, MessageType.SWITCH_ON)),
+        service.send_msg(Message(id_speaker, MessageType.SWITCH_ON)),
+        service.send_msg(Message(id_toilet, MessageType.SWITCH_ON)),
+    )
+    await run_sequence(
+        service.send_msg(Message(id_toilet, MessageType.FLUSH)),
+        service.send_msg(Message(id_toilet, MessageType.CLEAN)),
+        service.send_msg(Message(id_speaker, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up")),
+    )
+    await run_parallel(
+        service.send_msg(Message(id_hue_light, MessageType.SWITCH_OFF)),
+        service.send_msg(Message(id_speaker, MessageType.SWITCH_OFF)),
+        service.send_msg(Message(id_toilet, MessageType.SWITCH_OFF)),
+    )
 
 
 if __name__ == "__main__":
     start = time.perf_counter()
-    main()
+    asyncio.run(main())
     end = time.perf_counter()
 
     print("Elapsed:", end - start)
