@@ -1,16 +1,17 @@
 import time
 import asyncio
+from typing import Any, Awaitable
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
 from iot.service import IOTService
 
 
-async def run_sequence(*functions) -> None:
+async def run_sequence(*functions: Awaitable[Any]) -> None:
     for function in functions:
         await function
 
 
-async def run_parallel(*functions) -> None:
+async def run_parallel(*functions: Awaitable[Any]) -> None:
     await asyncio.gather(*functions)
 
 
