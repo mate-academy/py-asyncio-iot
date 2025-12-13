@@ -31,14 +31,17 @@ async def main() -> None:
         service.send_msg(Message(results[1], MessageType.SWITCH_ON))
     )
 
-    await run_sequence(
+    await run_parallel(
         service.send_msg(
             Message(results[1],
                     MessageType.PLAY_SONG,
                     "Rick Astley - Never Gonna Give You Up")
         ),
-        service.send_msg(Message(results[2], MessageType.FLUSH)),
-        service.send_msg(Message(results[2], MessageType.CLEAN))
+        run_sequence(
+            service.send_msg(Message(results[2], MessageType.FLUSH)),
+            service.send_msg(Message(results[2], MessageType.CLEAN))
+        )
+
     )
 
     await run_parallel(
