@@ -26,11 +26,12 @@ async def main() -> None:
                    speaker_id.result(),
                    toilet_id.result())
 
-    # create a few programs
-
-    wake_up_program = [
+    turning_on_devices = [
         Message(hue_light_id, MessageType.SWITCH_ON),
         Message(speaker_id, MessageType.SWITCH_ON),
+    ]
+
+    play_song = [
         Message(
             speaker_id,
             MessageType.PLAY_SONG,
@@ -38,15 +39,30 @@ async def main() -> None:
         ),
     ]
 
-    sleep_program = [
+    turning_of_devices = [
         Message(hue_light_id, MessageType.SWITCH_OFF),
         Message(speaker_id, MessageType.SWITCH_OFF),
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN),
     ]
 
-    await service.run_program(wake_up_program)
-    await service.run_program(sleep_program)
+    toilet_cleaning = [
+        Message(toilet_id, MessageType.FLUSH),
+        Message(toilet_id, MessageType.CLEAN)
+    ]
+
+    async def run_parallel(messages: list[Message]) -> None:
+        tasks = [
+            asyncio.create_task(service.send_msg(msg)) for msg in messages
+        ]
+        await asyncio.gather(*tasks)
+
+    async def run_sequence(messages: list[Message]) -> None:
+        for msg in messages:
+            await service.send_msg(msg)
+
+    await asyncio.create_task(run_parallel(turning_on_devices))
+    await asyncio.create_task(run_sequence(play_song))
+    await asyncio.create_task(run_parallel(turning_of_devices))
+    await asyncio.create_task(run_sequence(toilet_cleaning))
 
 if __name__ == "__main__":
     start = time.perf_counter()
