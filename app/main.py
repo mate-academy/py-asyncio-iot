@@ -1,4 +1,6 @@
+import time
 import asyncio
+
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import MessageType
 from iot.service import IOTService
@@ -6,7 +8,8 @@ from iot.service import IOTService
 from iot.helpers import run_parallel, run_sequence
 
 
-def main() -> None:
+async def main() -> None:
+    start_time = time.perf_counter()
 
     service = IOTService()
 
@@ -41,14 +44,9 @@ def main() -> None:
         ),
     )
 
-    # run the programs
-    service.run_program(wake_up_program)
-    service.run_program(sleep_program)
+    end_time = time.perf_counter()
+    print(f"\nElapsed time: {end_time - start_time:.2f} seconds")
 
 
 if __name__ == "__main__":
-    start = time.perf_counter()
-    main()
-    end = time.perf_counter()
-
-    print("Elapsed:", end - start)
+    asyncio.run(main())
