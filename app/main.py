@@ -41,14 +41,17 @@ async def main_async() -> None:
 
     await run_parallel(
         run_sequence(
-            run_sequence(service.send_msg(Message(ids["speaker"], MessageType.SWITCH_OFF)),
-            service.send_msg(Message(ids["light"], MessageType.SWITCH_OFF))),
+            service.send_msg(Message(ids["speaker"], MessageType.SWITCH_OFF)),
+            service.send_msg(Message(ids["light"], MessageType.SWITCH_OFF))
+        )
+    )
 
+    await run_parallel(
         run_sequence(
             service.send_msg(Message(ids["toilet"], MessageType.FLUSH)),
-            service.send_msg(Message(ids["toilet"], MessageType.CLEAN)),
+            service.send_msg(Message(ids["toilet"], MessageType.CLEAN))
         )
-    ))
+    )
 
 if __name__ == "__main__":
     start = time.perf_counter()
