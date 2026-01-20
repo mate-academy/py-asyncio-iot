@@ -31,22 +31,24 @@ async def main_async() -> None:
             service.send_msg(Message(ids["toilet"], MessageType.CLEAN))
         ),
         run_sequence(
-            service.send_msg(Message(ids["light"], MessageType.SWITCH_ON)),
-            service.send_msg(Message(ids["speaker"], MessageType.SWITCH_ON)),
+            run_parallel(
+                service.send_msg(Message(ids["light"], MessageType.SWITCH_ON)),
+            service.send_msg(Message(ids["speaker"], MessageType.SWITCH_ON))
+            ),
             service.send_msg(Message(ids["speaker"], MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"))
         )
     )
 
     await run_parallel(
         run_sequence(
-            service.send_msg(Message(ids["speaker"], MessageType.SWITCH_OFF)),
-            service.send_msg(Message(ids["light"], MessageType.SWITCH_OFF))
-        ),
+            run_sequence(service.send_msg(Message(ids["speaker"], MessageType.SWITCH_OFF)),
+            service.send_msg(Message(ids["light"], MessageType.SWITCH_OFF))),
+
         run_sequence(
+            service.send_msg(Message(ids["toilet"], MessageType.FLUSH)),
             service.send_msg(Message(ids["toilet"], MessageType.CLEAN)),
-            service.send_msg(Message(ids["toilet"], MessageType.FLUSH))
         )
-    )
+    ))
 
 if __name__ == "__main__":
     start = time.perf_counter()
