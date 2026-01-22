@@ -19,7 +19,6 @@ async def main() -> None:
         service.register_device(toilet)
     )
 
-    print("===== RUNNING WAKE UP PROGRAM =====")
     await run_parallel(
         service.send_msg(Message(
             hue_light_id,
@@ -38,7 +37,6 @@ async def main() -> None:
         )
     )
 
-    print("===== RUNNING SLEEP PROGRAM =====")
     await run_parallel(
         service.send_msg(Message(
             hue_light_id,
