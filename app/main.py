@@ -1,6 +1,10 @@
 import asyncio
 
-from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
+from iot.devices import (
+    HueLightDevice,
+    SmartSpeakerDevice,
+    SmartToiletDevice
+)
 from iot.message import Message, MessageType
 from iot.service import IOTService
 
@@ -28,7 +32,8 @@ async def main() -> None:
         service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
         run_sequence(
             service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
-            service.send_msg(Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"))
+            service.send_msg(Message(speaker_id, MessageType.PLAY_SONG,
+                                     "Rick Astley - Never Gonna Give You Up"))
         )
     )
 

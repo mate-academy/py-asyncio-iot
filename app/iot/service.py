@@ -32,7 +32,10 @@ class IOTService:
         self.devices[device_id] = device
         return device_id
 
-    async def register_multiple_devices(self, devices: list[Device]) -> list[str]:
+    async def register_multiple_devices(
+            self,
+            devices: list[Device]
+    ) -> list[str]:
         tasks = [self.register_device(device) for device in devices]
         return await asyncio.gather(*tasks)
 
