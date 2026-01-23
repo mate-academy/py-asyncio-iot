@@ -1,7 +1,7 @@
+import asyncio
 import random
 import string
-import asyncio
-from typing import Protocol, Any, Awaitable
+from typing import Any, Awaitable, Protocol
 
 from .message import Message, MessageType
 
@@ -17,7 +17,11 @@ class Device(Protocol):
     async def disconnect(self) -> None:
         ...
 
-    async def send_message(self, message_type: MessageType, data: str) -> None:
+    async def send_message(
+        self,
+        message_type: MessageType,
+        data: str,
+    ) -> None:
         ...
 
 
@@ -53,17 +57,23 @@ class IOTService:
             msg.data,
         )
 
-
-    async def wake_up(self, hue_light_id: str, speaker_id: str, toilet_id: str) -> None:
+    async def wake_up(
+        self,
+        hue_light_id: str,
+        speaker_id: str,
+        toilet_id: str,
+    ) -> None:
         print("===== RUNNING WAKE UP PROGRAM =====")
 
         await run_parallel(
             self.devices[hue_light_id].send_message(
-                MessageType.SWITCH_ON, ""
+                MessageType.SWITCH_ON,
+                "",
             ),
             run_sequence(
                 self.devices[speaker_id].send_message(
-                    MessageType.SWITCH_ON, ""
+                    MessageType.SWITCH_ON,
+                    "",
                 ),
                 self.devices[speaker_id].send_message(
                     MessageType.PLAY_SONG,
@@ -72,32 +82,43 @@ class IOTService:
             ),
             run_sequence(
                 self.devices[toilet_id].send_message(
-                    MessageType.FLUSH, ""
+                    MessageType.FLUSH,
+                    "",
                 ),
                 self.devices[toilet_id].send_message(
-                    MessageType.CLEAN, ""
+                    MessageType.CLEAN,
+                    "",
                 ),
             ),
         )
 
         print("===== END OF WAKE UP PROGRAM =====")
 
-    async def sleep(self, hue_light_id: str, speaker_id: str, toilet_id: str) -> None:
+    async def sleep(
+        self,
+        hue_light_id: str,
+        speaker_id: str,
+        toilet_id: str,
+    ) -> None:
         print("===== RUNNING SLEEP PROGRAM =====")
 
         await run_parallel(
             self.devices[hue_light_id].send_message(
-                MessageType.SWITCH_OFF, ""
+                MessageType.SWITCH_OFF,
+                "",
             ),
             self.devices[speaker_id].send_message(
-                MessageType.SWITCH_OFF, ""
+                MessageType.SWITCH_OFF,
+                "",
             ),
             run_sequence(
                 self.devices[toilet_id].send_message(
-                    MessageType.CLEAN, ""
+                    MessageType.FLUSH,
+                    "",
                 ),
                 self.devices[toilet_id].send_message(
-                    MessageType.FLUSH, ""
+                    MessageType.CLEAN,
+                    "",
                 ),
             ),
         )

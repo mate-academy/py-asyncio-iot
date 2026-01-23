@@ -2,7 +2,6 @@ import asyncio
 
 from .message import MessageType
 
-
 TIME_TO_SLEEP = 0.5
 
 
@@ -19,7 +18,8 @@ class HueLightDevice:
 
     async def send_message(self, message_type: MessageType, data: str = "") -> None:
         print(
-            f"Hue Light handling message of type {message_type.name} with data [{data}]."
+            "Hue Light handling message of type "
+            f"{message_type.name} with data [{data}]."
         )
         await asyncio.sleep(TIME_TO_SLEEP)
         print("Hue Light received message.")
@@ -38,7 +38,8 @@ class SmartSpeakerDevice:
 
     async def send_message(self, message_type: MessageType, data: str = "") -> None:
         print(
-            f"Smart Speaker handling message of type {message_type.name} with data [{data}]."
+            "Smart Speaker handling message of type "
+            f"{message_type.name} with data [{data}]."
         )
         await asyncio.sleep(TIME_TO_SLEEP)
         print("Smart Speaker received message.")
@@ -57,7 +58,8 @@ class SmartToiletDevice:
 
     async def send_message(self, message_type: MessageType, data: str = "") -> None:
         print(
-            f"Smart Toilet handling message of type {message_type.name} with data [{data}]."
+            "Smart Toilet handling message of type "
+            f"{message_type.name} with data [{data}]."
         )
         await asyncio.sleep(TIME_TO_SLEEP)
         print("Smart Toilet received message.")
