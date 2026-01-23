@@ -4,16 +4,7 @@ from typing import Any, Awaitable
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import MessageType
-from iot.service import IOTService
-
-
-async def run_sequence(*functions: Awaitable[Any]) -> None:
-    for function in functions:
-        await function
-
-
-async def run_parallel(*functions: Awaitable[Any]) -> None:
-    await asyncio.gather(*functions)
+from iot.service import IOTService, run_parallel, run_sequence
 
 
 async def main() -> None:
@@ -27,7 +18,7 @@ async def main() -> None:
     speaker_id = await service.register_device(speaker)
     toilet_id = await service.register_device(toilet)
 
-
+    # WAKE UP
     await run_sequence(
         run_parallel(
             service.send_message(hue_light_id, MessageType.SWITCH_ON),
@@ -39,6 +30,8 @@ async def main() -> None:
             "Rick Astley - Never Gonna Give You Up",
         ),
     )
+
+    # SLEEP
     await run_sequence(
         run_parallel(
             service.send_message(hue_light_id, MessageType.SWITCH_OFF),
@@ -48,15 +41,17 @@ async def main() -> None:
         service.send_message(toilet_id, MessageType.CLEAN),
     )
 
-    await service.disconnect()
-
+    await run_parallel(
+        service.unregister_device(hue_light_id),
+        service.unregister_device(speaker_id),
+        service.unregister_device(toilet_id),
+    )
 
 
 if __name__ == "__main__":
     start = time.perf_counter()
     asyncio.run(main())
-    end = time.perf_counter()
+    print("Elapsed:", time.perf_counter() - start)
 
-    print("Elapsed:", end - start)
 
 
