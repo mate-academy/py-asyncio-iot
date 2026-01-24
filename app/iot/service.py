@@ -11,10 +11,10 @@ def generate_id(length: int = 8) -> str:
 
 
 class Device(Protocol):
-    def connect(self) -> None:
+    async def connect(self) -> None:
         ...
 
-    def disconnect(self) -> None:
+    async def disconnect(self) -> None:
         ...
 
     def send_message(self, message_type: MessageType, data: str) -> None:
