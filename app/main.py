@@ -37,55 +37,34 @@ async def main() -> None:
         *smart_devices
     )
 
-    # create a few programs
-
-    wake_up_program = run_parallel(
-        service.run_program(
-            [
-                Message(speaker_id, MessageType.SWITCH_ON),
-                Message(
-                    speaker_id,
-                    MessageType.PLAY_SONG,
-                    "Rick Astley - Never Gonna Give You Up"
-                ),
-            ]
-        ),
-        service.run_program(
-            [
-                Message(hue_light_id, MessageType.SWITCH_ON)
-            ]
-        )
-    )
-
-    sleep_program = run_parallel(
-        service.run_program(
-            [
-                Message(toilet_id, MessageType.FLUSH),
-                Message(toilet_id, MessageType.CLEAN),
-            ]
-        ),
-        service.run_program(
-            [
-                Message(hue_light_id, MessageType.SWITCH_OFF),
-            ]
-        ),
-        service.run_program(
-            [
-                Message(speaker_id, MessageType.SWITCH_OFF),
-            ]
-        ),
-    )
-
     # run the programs
     await run_sequence(
-        wake_up_program,
-        sleep_program
+        run_parallel(
+            run_sequence(
+                service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
+                service.send_msg(
+                    Message(
+                        speaker_id,
+                        MessageType.PLAY_SONG,
+                        "Rick Astley - Never Gonna Give You Up"
+                    )
+                )
+            ),
+            service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
+        ),
+        run_parallel(
+            run_sequence(
+                service.send_msg(Message(toilet_id, MessageType.FLUSH)),
+                service.send_msg(Message(toilet_id, MessageType.CLEAN))
+            ),
+            service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
+        ),
     )
 
 
 if __name__ == "__main__":
     start = time.perf_counter()
     asyncio.run(main())
-    end = time.perf_counter()
+end = time.perf_counter()
 
-    print("Elapsed:", end - start)
+print("Elapsed:", end - start)
