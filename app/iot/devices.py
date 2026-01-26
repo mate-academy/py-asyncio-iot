@@ -39,7 +39,6 @@ class SmartSpeakerDevice:
     async def disconnect(self) -> None:
         print("Disconnecting Smart Speaker.")
         await asyncio.sleep(TIME_TO_SLEEP)
-        print("Smart Speaker connected.")
         print("Smart Speaker disconnected.")
 
     async def send_message(
