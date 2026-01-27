@@ -19,7 +19,9 @@ class Device(Protocol):
     def disconnect(self) -> None | Awaitable[None]:
         ...
 
-    def send_message(self, message_type: MessageType, data: str) -> None | Awaitable[None]:
+    def send_message(self, message_type: MessageType, data: str) -> None | \
+                                                                    Awaitable[
+                                                                        None]:
         ...
 
 
@@ -27,7 +29,7 @@ class IOTService:
     def __init__(self) -> None:
         self.devices: dict[str, Device] = {}
 
-    async  def register_device(self, device: Device) -> str:
+    async def register_device(self, device: Device) -> str:
         await device.connect()
         device_id = generate_id()
         self.devices[device_id] = device

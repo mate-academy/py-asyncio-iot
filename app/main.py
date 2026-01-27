@@ -7,7 +7,6 @@ from iot.message import Message, MessageType
 from iot.service import IOTService
 
 
-# ===================== HELPERS ====================
 async def run_sequence(*functions: Awaitable[Any]) -> None:
     for function in functions:
         await function
@@ -16,8 +15,6 @@ async def run_sequence(*functions: Awaitable[Any]) -> None:
 async def run_parallel(*functions: Awaitable[Any]) -> None:
     await asyncio.gather(*functions)
 
-
-# ==================================================
 
 async def main() -> None:
     # create an IOT service
@@ -36,7 +33,6 @@ async def main() -> None:
     )
 
     # create a few programs
-    # WAKE UP PROGRAMS
     await run_sequence(
         run_parallel(
             service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
@@ -48,7 +44,6 @@ async def main() -> None:
         )
     )
 
-    # SLEEP PROGRAMS
     await run_sequence(
         run_parallel(
             service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
