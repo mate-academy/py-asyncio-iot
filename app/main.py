@@ -37,8 +37,8 @@ async def main() -> None:
     # -----------------------------
     # WAKE UP PROGRAM
     # -----------------------------
-    await run_parallel(
-        service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
+    # Speaker: SWITCH_ON → PLAY_SONG (sequence)
+    speaker_sequence = run_sequence(
         service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
         service.send_msg(
             Message(
@@ -49,20 +49,29 @@ async def main() -> None:
         ),
     )
 
+    # Light: SWITCH_ON (independent)
+    light_on = service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON))
+
+    # Run both groups in parallel
+    await run_parallel(light_on, speaker_sequence)
+
     # -----------------------------
     # SLEEP PROGRAM
     # -----------------------------
-    # Independent operations → parallel
-    await run_parallel(
+    # Group 1: turn off devices (parallel)
+    switch_off_parallel = run_parallel(
         service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
         service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
     )
 
-    # Dependent operations → sequence
-    await run_sequence(
+    # Group 2: toilet cleaning cycle (sequence)
+    toilet_sequence = run_sequence(
         service.send_msg(Message(toilet_id, MessageType.FLUSH)),
         service.send_msg(Message(toilet_id, MessageType.CLEAN)),
     )
+
+    # Run both groups in parallel (top-level)
+    await run_parallel(switch_off_parallel, toilet_sequence)
 
 
 if __name__ == "__main__":
