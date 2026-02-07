@@ -28,7 +28,7 @@ async def main() -> None:
     )
 
     # create a few programs
-    wake_up_flow = run_sequence(
+    wake_up_flow = [
         run_parallel(
             service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
             service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
@@ -40,22 +40,18 @@ async def main() -> None:
                 "Rick Astley - Never Gonna Give You Up",
             )
         ),
-    )
+    ]
 
-    sleep_flow = run_sequence(
+    sleep_flow = [
         run_parallel(
             service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
             service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
             service.send_msg(Message(toilet_id, MessageType.FLUSH)),
         ),
         service.send_msg(Message(toilet_id, MessageType.CLEAN)),
-    )
+    ]
 
-    async with asyncio.TaskGroup() as tg:
-        print("=====RUNNING PROGRAM======")
-        tg.create_task(wake_up_flow)
-        tg.create_task(sleep_flow)
-    print("=====END OF PROGRAM======")
+    await run_sequence(*wake_up_flow, *sleep_flow),
 
 
 if __name__ == "__main__":
