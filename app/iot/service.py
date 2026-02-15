@@ -28,7 +28,7 @@ class Device(Protocol):
     async def disconnect(self) -> None:
         ...
 
-    async def send_message(self, message_type: MessageType, data: str) -> None:
+    async def send_message(self, message_type: MessageType, data: str = "") -> None:
         ...
 
 
@@ -43,6 +43,8 @@ class IOTService:
         return device_id
 
     async def unregister_device(self, device_id: str) -> None:
+        if device_id not in self.devices:
+            raise ValueError(f"Device with ID '{device_id}' is not registered.")
         await self.devices[device_id].disconnect()
         del self.devices[device_id]
 
@@ -56,4 +58,6 @@ class IOTService:
         print("=====END OF PROGRAM======")
 
     async def send_msg(self, msg: Message) -> None:
+        if msg.device_id not in self.devices:
+            raise ValueError(f"Device with ID '{msg.device_id}' is not registered.")
         await self.devices[msg.device_id].send_message(msg.msg_type, msg.data)
