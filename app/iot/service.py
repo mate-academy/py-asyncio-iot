@@ -1,3 +1,4 @@
+import asyncio
 import random
 import string
 from typing import Protocol
@@ -5,7 +6,7 @@ from typing import Protocol
 from .message import Message, MessageType
 
 
-async def generate_id(length: int = 8) -> str:
+def generate_id(length: int = 8) -> str:
     return "".join(random.choices(string.ascii_uppercase, k=length))
 
 
@@ -27,7 +28,7 @@ class IOTService:
 
     async def register_device(self, device: Device) -> str:
         await device.connect()
-        device_id = await generate_id()
+        device_id = generate_id()
         self.devices[device_id] = device
         return device_id
 
@@ -35,7 +36,7 @@ class IOTService:
         await self.devices[device_id].disconnect()
         del self.devices[device_id]
 
-    async def get_device(self, device_id: str) -> Device:
+    def get_device(self, device_id: str) -> Device:
         return self.devices[device_id]
 
     async def run_program(self, program: list[Message]) -> None:
