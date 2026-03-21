@@ -17,4 +17,4 @@ class MessageType(Enum):
 class Message:
     device_id: str
     msg_type: MessageType
-    data: str = ""
+    data: str | None = ""
