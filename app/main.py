@@ -3,7 +3,7 @@ import time
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
-from iot.service import IOTService
+from iot.service import IOTService, run_parallel, run_sequence
 
 
 async def main() -> None:
@@ -22,21 +22,34 @@ async def main() -> None:
         )
     )
 
-    program = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.SWITCH_ON),
-        Message(
-            speaker_id,
-            MessageType.PLAY_SONG,
-            "Rick Astley - Never Gonna Give You Up"
-        ),
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN),
-        Message(hue_light_id, MessageType.SWITCH_OFF),
-        Message(speaker_id, MessageType.SWITCH_OFF),
-    ]
+    # create a few programs
+    hue_seq = run_sequence(
+        service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON))
+    )
+    speaker_seq = run_sequence(
+        service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
+        service.send_msg(
+            Message(
+                speaker_id,
+                MessageType.PLAY_SONG,
+                "Rick Astley - Never Gonna Give You Up"
+            )
+        )
+    )
+    await run_parallel(hue_seq, speaker_seq)
+    # run the programs
+    toilet_seq = run_sequence(
+        service.send_msg(Message(toilet_id, MessageType.FLUSH)),
+        service.send_msg(Message(toilet_id, MessageType.CLEAN)),
+    )
 
-    await service.run_program(program)
+    hue_off_seq = run_sequence(
+        service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
+    )
+    speaker_off_seq = run_sequence(
+        service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
+    )
+    await run_parallel(toilet_seq, hue_off_seq, speaker_off_seq)
 
 
 if __name__ == "__main__":

@@ -52,20 +52,5 @@ class IOTService:
     def get_device(self, device_id: str) -> Device:
         return self.devices[device_id]
 
-    async def run_program(self, program: list[Message]) -> None:
-        print("=====RUNNING PROGRAM======")
-        groups: dict[str, list[Message]] = {}
-        for msg in program:
-            if msg.device_id not in groups:
-                groups[msg.device_id] = []
-            groups[msg.device_id].append(msg)
-
-        sequences = []
-        for device_id, messages in groups.items():
-            seq = run_sequence(*(self.send_msg(msg) for msg in messages))
-            sequences.append(seq)
-        await run_parallel(*sequences)
-        print("=====END OF PROGRAM======")
-
     async def send_msg(self, msg: Message) -> None:
         await self.devices[msg.device_id].send_message(msg.msg_type, msg.data)
