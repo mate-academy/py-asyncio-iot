@@ -23,9 +23,7 @@ async def main() -> None:
     )
 
     # create a few programs
-    hue_seq = run_sequence(
-        service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON))
-    )
+    hue_seq = service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON))
     speaker_seq = run_sequence(
         service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
         service.send_msg(
@@ -43,12 +41,8 @@ async def main() -> None:
         service.send_msg(Message(toilet_id, MessageType.CLEAN)),
     )
 
-    hue_off_seq = run_sequence(
-        service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
-    )
-    speaker_off_seq = run_sequence(
-        service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
-    )
+    hue_off_seq = service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF))
+    speaker_off_seq = service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF))
     await run_parallel(toilet_seq, hue_off_seq, speaker_off_seq)
 
 
