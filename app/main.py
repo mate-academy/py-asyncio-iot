@@ -31,7 +31,7 @@ async def main() -> None:
         service.register_device(toilet),
     )
 
-    wake_up = run_sequence(
+    await run_sequence(
         run_parallel(
             service.send_msg(Message(hue_light_id, MessageType.SWITCH_ON)),
             service.send_msg(Message(speaker_id, MessageType.SWITCH_ON)),
@@ -44,7 +44,7 @@ async def main() -> None:
             )
         ),
     )
-    sleep = run_sequence(
+    await run_sequence(
         run_parallel(
             service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
             service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
@@ -53,12 +53,12 @@ async def main() -> None:
         service.send_msg(Message(toilet_id, MessageType.CLEAN))
     )
 
-    await service.run_program([wake_up, sleep])
-
 
 if __name__ == "__main__":
+
     start = time.perf_counter()
     asyncio.run(main())
+
     end = time.perf_counter()
 
     print("Elapsed:", end - start)
