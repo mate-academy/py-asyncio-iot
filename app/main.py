@@ -42,7 +42,7 @@ async def main() -> None:
         )
     )
 
-    await run_sequence(
+    await run_parallel(
         run_parallel(
             service.send_msg(Message(results[0], MessageType.SWITCH_OFF)),
             service.send_msg(Message(results[1], MessageType.SWITCH_OFF))
