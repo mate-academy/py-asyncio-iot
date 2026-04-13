@@ -37,10 +37,12 @@ async def main() -> None:
         ),
     )
 
-    # sleep program: light off + speaker off in parallel, then toilet flush -> clean in sequence
-    await run_parallel(
-        service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
-        service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
+    # sleep program: first turn off light + speaker in parallel, then flush -> clean in sequence
+    await run_sequence(
+        run_parallel(
+            service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
+            service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
+        ),
         run_sequence(
             service.send_msg(Message(toilet_id, MessageType.FLUSH)),
             service.send_msg(Message(toilet_id, MessageType.CLEAN)),

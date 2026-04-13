@@ -39,8 +39,13 @@ class IOTService:
         return self.devices[device_id]
 
     async def run_program(self, program: list[Message]) -> None:
+        """
+        Run all messages in parallel.
+        ⚠️ Note: This method does not enforce ordering.
+        For workflows that require logical sequencing (e.g. SWITCH_ON -> PLAY_SONG),
+        use helper functions run_sequence/run_parallel in main.py.
+        """
         print("=====RUNNING PROGRAM======")
-        # run all messages in parallel
         await asyncio.gather(*(self.send_msg(msg) for msg in program))
         print("=====END OF PROGRAM======")
 

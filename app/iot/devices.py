@@ -1,5 +1,5 @@
 import asyncio
-from app.iot.message import MessageType
+from .message import MessageType  # локальний імпорт
 
 TIME_TO_SLEEP = 0.5
 
