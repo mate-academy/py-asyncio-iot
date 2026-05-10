@@ -20,12 +20,14 @@ async def main() -> None:
         for function in functions:
             await function
 
-    async def run_parallel(*functions: Awaitable[Any]) -> None:
-        await asyncio.gather(*functions)
+    async def run_parallel(*functions: Awaitable[Any]) -> list[Any]:
+        return await asyncio.gather(*functions)
 
-    hue_light_id = await service.register_device(hue_light)
-    speaker_id = await service.register_device(speaker)
-    toilet_id = await service.register_device(toilet)
+    hue_light_id, speaker_id, toilet_id = await run_parallel(
+        service.register_device(hue_light),
+        service.register_device(speaker),
+        service.register_device(toilet)
+    )
 
     await run_parallel(
         service.send_msg(Message(speaker_id, MessageType.SWITCH_ON, "on")),
