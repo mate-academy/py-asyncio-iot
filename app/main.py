@@ -1,9 +1,19 @@
 import asyncio
 import time
+from typing import Any, Awaitable
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
 from iot.service import IOTService
+
+
+async def run_sequence(*functions: Awaitable[Any]) -> None:
+    for function in functions:
+        await function
+
+
+async def run_parallel(*functions: Awaitable[Any]) -> None:
+    await asyncio.gather(*functions)
 
 
 async def main() -> None:
@@ -20,31 +30,32 @@ async def main() -> None:
         service.register_device(toilet),
     )
 
-    # create a few programs
-    wake_up_program = [
-        (
-            Message(devices_ids[0], MessageType.SWITCH_ON),
-            Message(devices_ids[1], MessageType.SWITCH_ON),
+    # wake up program
+    await run_sequence(
+        run_parallel(
+            service.send_msg(Message(devices_ids[0], MessageType.SWITCH_ON)),
+            service.send_msg(Message(devices_ids[1], MessageType.SWITCH_ON))   
         ),
-        Message(
-            devices_ids[1],
-            MessageType.PLAY_SONG,
-            "Rick Astley - Never Gonna Give You Up",
-        ),
-    ]
+        service.send_msg(
+            Message(
+                devices_ids[1],
+                MessageType.PLAY_SONG,
+                "Rick Astley - Never Gonna Give You Up",
+            )
+        )
+    )
 
-    sleep_program = [
-        (
-            Message(devices_ids[0], MessageType.SWITCH_OFF),
-            Message(devices_ids[1], MessageType.SWITCH_OFF),
-        ),
-        Message(devices_ids[2], MessageType.FLUSH),
-        Message(devices_ids[2], MessageType.CLEAN),
-    ]
+    # sleep program
 
-    # run the programs
-    await service.run_program(wake_up_program)
-    await service.run_program(sleep_program)
+    await run_sequence(
+        run_parallel(
+            service.send_msg(Message(devices_ids[0], MessageType.SWITCH_OFF)),
+            service.send_msg(Message(devices_ids[1], MessageType.SWITCH_OFF)),
+        ),
+        service.send_msg(Message(devices_ids[2], MessageType.FLUSH)),
+        service.send_msg(Message(devices_ids[2], MessageType.CLEAN)),
+    )
+
 
 
 if __name__ == "__main__":
