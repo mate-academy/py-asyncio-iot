@@ -7,7 +7,7 @@ from iot.devices import (
     SmartToiletDevice,
 )
 from iot.message import Message, MessageType
-from iot.service import IOTService
+from iot.service import IOTService, run_parallel, run_sequence
 
 
 async def main() -> None:
@@ -23,25 +23,53 @@ async def main() -> None:
         service.register_device(toilet),
     )
 
-    wake_up_program = [
-        Message(hue_light_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.SWITCH_ON),
-        Message(
-            speaker_id,
-            MessageType.PLAY_SONG,
-            "Rick Astley - Never Gonna Give You Up",
+    print("=====RUNNING WAKE UP PROGRAM======")
+
+    await run_parallel(
+        service.send_msg(
+            Message(hue_light_id, MessageType.SWITCH_ON)
         ),
-    ]
+        service.send_msg(
+            Message(speaker_id, MessageType.SWITCH_ON)
+        ),
+    )
 
-    sleep_program = [
-        Message(hue_light_id, MessageType.SWITCH_OFF),
-        Message(speaker_id, MessageType.SWITCH_OFF),
-        Message(toilet_id, MessageType.FLUSH),
-        Message(toilet_id, MessageType.CLEAN),
-    ]
+    await run_sequence(
+        service.send_msg(
+            Message(
+                speaker_id,
+                MessageType.PLAY_SONG,
+                "Rick Astley - Never Gonna Give You Up",
+            )
+        )
+    )
 
-    await service.run_program(wake_up_program)
-    await service.run_program(sleep_program)
+    print("=====END WAKE UP PROGRAM======")
+
+    print("=====RUNNING SLEEP PROGRAM======")
+
+    await run_parallel(
+        service.send_msg(
+            Message(hue_light_id, MessageType.SWITCH_OFF)
+        ),
+        service.send_msg(
+            Message(speaker_id, MessageType.SWITCH_OFF)
+        ),
+    )
+
+    await run_parallel(
+        service.send_msg(
+            Message(toilet_id, MessageType.FLUSH)
+        ),
+    )
+
+    await run_sequence(
+        service.send_msg(
+            Message(toilet_id, MessageType.CLEAN)
+        )
+    )
+
+    print("=====END SLEEP PROGRAM=======")
 
 
 if __name__ == "__main__":
