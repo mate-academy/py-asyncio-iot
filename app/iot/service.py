@@ -12,13 +12,13 @@ def generate_id(length: int = 8) -> str:
 
 # Protocol is very similar to ABC, but uses duck typing
 class Device(Protocol):
-    def connect(self) -> None:
+    async def connect(self) -> None:
         ...
 
-    def disconnect(self) -> None:
+    async def disconnect(self) -> None:
         ...
 
-    def send_message(self, message_type: MessageType, data: str) -> None:
+    async def send_message(self, message_type: MessageType, data: str) -> None:
         ...
 
 
@@ -26,14 +26,14 @@ class IOTService:
     def __init__(self) -> None:
         self.devices: dict[str, Device] = {}
 
-    def register_device(self, device: Device) -> str:
-        device.connect()
+    async def register_device(self, device: Device) -> str:
+        await device.connect()
         device_id = generate_id()
         self.devices[device_id] = device
         return device_id
 
-    def unregister_device(self, device_id: str) -> None:
-        self.devices[device_id].disconnect()
+    async def unregister_device(self, device_id: str) -> None:
+        await self.devices[device_id].disconnect()
         del self.devices[device_id]
 
     def get_device(self, device_id: str) -> Device:
