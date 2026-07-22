@@ -102,28 +102,6 @@ async def main() -> None:
     speaker_id = devices_ids[speaker.NAME]
     toilet_id = devices_ids[toilet.NAME]
 
-    # create a few programs
-    # wake_up_program = [
-    #     Message(hue_light_id, MessageType.SWITCH_ON),
-    #     Message(speaker_id, MessageType.SWITCH_ON),
-    #     Message(
-    #     speaker_id,
-    #     MessageType.PLAY_SONG,
-    #     "Rick Astley - Never Gonna Give You Up"
-    #     ),
-    # ]
-    #
-    # sleep_program = [
-    #     Message(hue_light_id, MessageType.SWITCH_OFF),
-    #     Message(speaker_id, MessageType.SWITCH_OFF),
-    #     Message(toilet_id, MessageType.FLUSH),
-    #     Message(toilet_id, MessageType.CLEAN),
-    # ]
-    #
-    # # run the programs
-    # await service.run_program(wake_up_program)
-    # await service.run_program(sleep_program)
-
     await wake_up(service, hue_light_id, speaker_id)
     await sleep(service, hue_light_id, speaker_id, toilet_id)
 
