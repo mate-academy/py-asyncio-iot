@@ -30,6 +30,7 @@ async def main() -> None:
         service.register_device(toilet)
     )
 
+    print("=====RUNNING PROGRAM======")
     await run_parallel(
         service.send_msg(
             Message(hue_light_id, MessageType.SWITCH_ON)
@@ -43,7 +44,9 @@ async def main() -> None:
             )
         )
     )
+    print("=====END OF PROGRAM======")
 
+    print("=====RUNNING PROGRAM======")
     await run_parallel(
         service.send_msg(
             Message(hue_light_id, MessageType.SWITCH_OFF),
@@ -60,6 +63,7 @@ async def main() -> None:
             )
         )
     )
+    print("=====END OF PROGRAM======")
 
 
 if __name__ == "__main__":
