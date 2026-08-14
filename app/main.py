@@ -24,8 +24,7 @@ async def main() -> None:
         service.register_device(toilet),
     )
 
-    # Wake up
-    await run_parallel(
+    wake_up_program = run_parallel(
         service.send_msg(
             Message(
                 hue_light_id,
@@ -49,8 +48,9 @@ async def main() -> None:
         ),
     )
 
-    # Sleep
-    await run_parallel(
+    await service.run_program(wake_up_program)
+
+    sleep_program = run_parallel(
         service.send_msg(
             Message(
                 hue_light_id,
@@ -78,6 +78,8 @@ async def main() -> None:
             ),
         ),
     )
+
+    await service.run_program(sleep_program)
 
 
 if __name__ == "__main__":
