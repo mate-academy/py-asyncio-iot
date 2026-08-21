@@ -63,12 +63,12 @@ class SmartSpeakerDevice:
 class SmartToiletDevice:
     async def connect(self) -> None:
         print("Connecting to Smart Toilet.")
-        time.sleep(TIME_TO_SLEEP)
+        await asyncio.sleep(TIME_TO_SLEEP)
         print("Smart Toilet connected.")
 
     async def disconnect(self) -> None:
         print("Disconnecting Smart Toilet.")
-        time.sleep(TIME_TO_SLEEP)
+        await asyncio.sleep(TIME_TO_SLEEP)
         print("Smart Toilet disconnected.")
 
     async def send_message(
@@ -82,5 +82,5 @@ class SmartToiletDevice:
                 f"with data [{data}]."
             )
         )
-        time.sleep(TIME_TO_SLEEP)
+        await asyncio.sleep(TIME_TO_SLEEP)
         print("Smart Toilet received message.")
