@@ -1,7 +1,6 @@
 import random
 import string
 from typing import Protocol
-
 from .message import Message, MessageType
 
 
