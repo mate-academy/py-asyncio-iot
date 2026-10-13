@@ -1,9 +1,10 @@
 import asyncio
 import time
+from http import server
 
 from iot.devices import HueLightDevice, SmartSpeakerDevice, SmartToiletDevice
 from iot.message import Message, MessageType
-from iot.service import IOTService
+from iot.service import IOTService, run_parallel, run_sequence
 
 
 async def main() -> None:
@@ -36,9 +37,10 @@ async def main() -> None:
         Message(toilet_id, MessageType.CLEAN),
     ]
 
-    # run the programs
-    await service.run_program(wake_up_program)
-    await service.run_program(sleep_program)
+    await run_parallel(
+        run_sequence( service.send_msg(program) for program in wake_up_program),
+        run_sequence(service.send_msg(program) for program in sleep_program),
+    )
 
 
 if __name__ == "__main__":
