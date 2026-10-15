@@ -1,0 +1,21 @@
+Connecting Hue Light.
+Connecting to Smart Speaker.
+Connecting to Smart Toilet.
+Hue Light connected.
+Smart Speaker connected.
+Smart Toilet connected.
+Hue Light handling message of type SWITCH_ON with data [].
+Smart Speaker handling message of type SWITCH_ON with data [].
+Hue Light received message.
+Smart Speaker received message.
+Smart Speaker handling message of type PLAY_SONG with data [Rick Astley - Never Gonna Give You Up].
+Smart Speaker received message.
+Hue Light handling message of type SWITCH_OFF with data [].
+Smart Speaker handling message of type SWITCH_OFF with data [].
+Smart Toilet handling message of type FLUSH with data [].
+Hue Light received message.
+Smart Speaker received message.
+Smart Toilet received message.
+Smart Toilet handling message of type CLEAN with data [].
+Smart Toilet received message.
+Elapsed: 2.5056793339999786
