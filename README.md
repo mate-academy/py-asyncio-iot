@@ -47,3 +47,47 @@ For easier asynchronous setup, please follow these steps:
 **Please note:** attach the screenshot of your script results (the console) to the PR.
 
 
+
+## Running the completed solution
+
+From the repository root:
+
+```sh
+python3 app/main.py
+```
+
+Device operations use `asyncio.sleep` to simulate nonblocking I/O. All three
+registrations run concurrently. The wake-up routine runs the light alongside
+`speaker on -> play song`. Once wake-up finishes, the sleep routine switches off
+the light and speaker alongside `flush -> clean`. Each routine awaits all its
+operations before continuing. The service also retains an async `run_program`
+method for callers that need an ordered list of messages.
+
+### Validation
+
+Use Python 3.11 for the pinned lint dependencies; `flake8-annotations==2.9.1`
+does not load under Python 3.14.
+
+```sh
+python3.11 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt pytest
+python -m pytest -q
+flake8
+```
+
+The six tests cover device I/O, registration and unregistration, message
+forwarding, sequence order, concurrent execution, and the complete wake/sleep
+dependency graph. Concurrency tests use events and execution order rather than
+assertions about elapsed time.
+
+A full run on Python 3.14.6 took approximately **2.51 seconds**, compared with
+**5.04 seconds** for the original synchronous version on the same machine.
+Both runs contain the same device connection and message events. Timings vary
+with system load.
+
+- [Original console transcript](docs/baseline.txt)
+- [Async console transcript](docs/results.txt)
+
+The transcripts capture actual script runs. A console screenshot could not be
+captured in the execution environment.
