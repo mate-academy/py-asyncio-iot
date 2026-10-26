@@ -21,7 +21,11 @@ def main() -> None:
     wake_up_program = [
         Message(hue_light_id, MessageType.SWITCH_ON),
         Message(speaker_id, MessageType.SWITCH_ON),
-        Message(speaker_id, MessageType.PLAY_SONG, "Rick Astley - Never Gonna Give You Up"),
+        Message(
+            speaker_id,
+            MessageType.PLAY_SONG,
+            "Rick Astley - Never Gonna Give You Up",
+        ),
     ]
 
     sleep_program = [
