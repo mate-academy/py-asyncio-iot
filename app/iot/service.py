@@ -1,49 +1,31 @@
-import random
 import string
-from typing import Protocol
+import random
+from typing import Dict, Any
 
-from .message import Message, MessageType
+from iot.message import Message
 
 
 def generate_id(length: int = 8) -> str:
-    return "".join(random.choices(string.ascii_uppercase, k=length))
-
-
-# Protocol is very similar to ABC, but uses duck typing
-# so devices should not inherit for it (if it walks like a duck, and quacks like a duck, it's a duck)
-class Device(Protocol):
-    def connect(self) -> None:
-        ...  # Ellipsis - similar to "pass", but sometimes has different meaning
-
-    def disconnect(self) -> None:
-        ...
-
-    def send_message(self, message_type: MessageType, data: str) -> None:
-        ...
+    return "".join(random.choices(string.ascii_uppercase + string.digits, k=length))
 
 
 class IOTService:
     def __init__(self) -> None:
-        self.devices: dict[str, Device] = {}
+        self.devices: Dict[str, Any] = {}
 
-    def register_device(self, device: Device) -> str:
-        device.connect()
+    async def register_device(self, device: Any) -> str:
         device_id = generate_id()
         self.devices[device_id] = device
+
+        await device.connect()
         return device_id
 
-    def unregister_device(self, device_id: str) -> None:
-        self.devices[device_id].disconnect()
+    async def unregister_device(self, device_id: str) -> None:
+        device = self.devices[device_id]
+        await device.disconnect()
         del self.devices[device_id]
 
-    def get_device(self, device_id: str) -> Device:
-        return self.devices[device_id]
+    async def send_message(self, message: Message) -> None:
+        device = self.devices[message.device_id]
 
-    def run_program(self, program: list[Message]) -> None:
-        print("=====RUNNING PROGRAM======")
-        for msg in program:
-            self.send_msg(msg)
-        print("=====END OF PROGRAM======")
-
-    def send_msg(self, msg: Message) -> None:
-        self.devices[msg.device_id].send_message(msg.msg_type, msg.data)
+        await device.send_message(message.msg_type, message.data)
