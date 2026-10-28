@@ -34,7 +34,6 @@ async def main() -> None:
         )
     )
 
-
     # run the programs
     await run_sequence(
         run_parallel(
