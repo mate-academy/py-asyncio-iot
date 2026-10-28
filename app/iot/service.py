@@ -1,5 +1,6 @@
 import random
 import string
+import asyncio
 from typing import Protocol, Awaitable, Any
 
 from .message import Message, MessageType
@@ -8,6 +9,10 @@ from .message import Message, MessageType
 async def run_sequence(*functions: Awaitable[Any]) -> None:
     for function in functions:
         await function
+
+
+async def run_parallel(*functions: Awaitable[Any]) -> None:
+    await asyncio.gather(*functions)
 
 
 def generate_id(length: int = 8) -> str:
@@ -35,8 +40,8 @@ class IOTService:
         self.devices[device_id] = device
         return device_id
 
-    def unregister_device(self, device_id: str) -> None:
-        self.devices[device_id].disconnect()
+    async def unregister_device(self, device_id: str) -> None:
+        await self.devices[device_id].disconnect()
         del self.devices[device_id]
 
     def get_device(self, device_id: str) -> Device:
