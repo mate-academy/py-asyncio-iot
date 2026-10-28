@@ -1,6 +1,7 @@
 import asyncio
 
 from .message import MessageType
+from app.iot.service import run_parallel
 
 
 TIME_TO_SLEEP = 0.5
