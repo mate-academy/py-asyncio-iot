@@ -12,13 +12,13 @@ def generate_id(length: int = 8) -> str:
 # Protocol is very similar to ABC, but uses duck typing
 # so devices should not inherit for it (if it walks like a duck, and quacks like a duck, it's a duck)
 class Device(Protocol):
-    def connect(self) -> None:
+    async def connect(self) -> None:
         ...  # Ellipsis - similar to "pass", but sometimes has different meaning
 
-    def disconnect(self) -> None:
+    async def disconnect(self) -> None:
         ...
 
-    def send_message(self, message_type: MessageType, data: str) -> None:
+    async def send_message(self, message_type: MessageType, data: str) -> None:
         ...
 
 
@@ -32,8 +32,8 @@ class IOTService:
         self.devices[device_id] = device
         return device_id
 
-    def unregister_device(self, device_id: str) -> None:
-        self.devices[device_id].disconnect()
+    async def unregister_device(self, device_id: str) -> None:
+        await self.devices[device_id].disconnect()
         del self.devices[device_id]
 
     def get_device(self, device_id: str) -> Device:
