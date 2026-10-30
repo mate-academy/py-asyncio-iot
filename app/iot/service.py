@@ -1,3 +1,4 @@
+import asyncio
 import random
 import string
 from typing import Protocol
@@ -12,38 +13,45 @@ def generate_id(length: int = 8) -> str:
 # Protocol is very similar to ABC, but uses duck typing
 # so devices should not inherit for it (if it walks like a duck, and quacks like a duck, it's a duck)
 class Device(Protocol):
-    def connect(self) -> None:
-        ...  # Ellipsis - similar to "pass", but sometimes has different meaning
+    async def connect(
+        self,
+    ) -> None: ...  # Ellipsis - similar to "pass", but sometimes has different meaning
 
-    def disconnect(self) -> None:
-        ...
+    async def disconnect(self) -> None: ...
 
-    def send_message(self, message_type: MessageType, data: str) -> None:
-        ...
+    async def send_message(self, message_type: MessageType, data: str) -> None: ...
 
 
 class IOTService:
     def __init__(self) -> None:
         self.devices: dict[str, Device] = {}
+        self.locks = {}
 
-    def register_device(self, device: Device) -> str:
-        device.connect()
+    async def register_device(self, device: Device) -> str:
+        await device.connect()
         device_id = generate_id()
         self.devices[device_id] = device
         return device_id
 
-    def unregister_device(self, device_id: str) -> None:
-        self.devices[device_id].disconnect()
+    async def unregister_device(self, device_id: str) -> None:
+        await self.get_device(device_id).disconnect()
         del self.devices[device_id]
 
     def get_device(self, device_id: str) -> Device:
         return self.devices[device_id]
 
-    def run_program(self, program: list[Message]) -> None:
+    async def run_program(self, program: list[Message]) -> None:
         print("=====RUNNING PROGRAM======")
-        for msg in program:
-            self.send_msg(msg)
+
+        async with asyncio.TaskGroup() as tg:
+            for msg in program:
+                if self.locks.get(msg.device_id) is None:
+                    self.locks[msg.device_id] = asyncio.Lock()
+
+                tg.create_task(self.send_msg(msg, self.locks[msg.device_id]))
+
         print("=====END OF PROGRAM======")
 
-    def send_msg(self, msg: Message) -> None:
-        self.devices[msg.device_id].send_message(msg.msg_type, msg.data)
+    async def send_msg(self, msg: Message, lock: asyncio.Lock) -> None:
+        async with lock:
+            await self.get_device(msg.device_id).send_message(msg.msg_type, msg.data)
