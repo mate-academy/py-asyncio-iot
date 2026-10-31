@@ -1,7 +1,7 @@
 import asyncio
 import random
 import string
-from typing import Protocol
+from typing import Any, Awaitable, Protocol
 
 from .message import Message, MessageType
 
@@ -25,7 +25,6 @@ class Device(Protocol):
 class IOTService:
     def __init__(self) -> None:
         self.devices: dict[str, Device] = {}
-        self.locks = {}
 
     async def register_device(self, device: Device) -> str:
         await device.connect()
@@ -45,13 +44,18 @@ class IOTService:
 
         async with asyncio.TaskGroup() as tg:
             for msg in program:
-                if self.locks.get(msg.device_id) is None:
-                    self.locks[msg.device_id] = asyncio.Lock()
-
-                tg.create_task(self.send_msg(msg, self.locks[msg.device_id]))
+                tg.create_task(self.send_msg(msg))
 
         print("=====END OF PROGRAM======")
 
-    async def send_msg(self, msg: Message, lock: asyncio.Lock) -> None:
-        async with lock:
-            await self.get_device(msg.device_id).send_message(msg.msg_type, msg.data)
+    async def send_msg(self, msg: Message) -> None:
+        await self.get_device(msg.device_id).send_message(msg.msg_type, msg.data)
+
+
+async def run_sequence(*functions: Awaitable[Any]) -> None:
+    for function in functions:
+        await function
+
+
+async def run_parallel(*functions: Awaitable[Any]) -> None:
+    await asyncio.gather(*functions)
