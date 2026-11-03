@@ -18,3 +18,6 @@ class Message:
     device_id: str
     msg_type: MessageType
     data: str = ""
+
+    def __repr__(self) -> str:
+        return f"{self.msg_type}"
