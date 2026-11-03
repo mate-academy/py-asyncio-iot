@@ -45,5 +45,6 @@ For easier asynchronous setup, please follow these steps:
    but at least it works correctly now.
     
 **Please note:** attach the screenshot of your script results (the console) to the PR.
+Attached screenshot to the PR
 
 
