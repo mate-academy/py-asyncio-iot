@@ -5,10 +5,6 @@ from .message import MessageType
 TIME_TO_SLEEP = 0.5
 
 
-# of course this code looks dumb, but imagine some real implementations of
-# sleep, light, etc
-
-
 class HueLightDevice:
     async def connect(self) -> None:
         print("Connecting Hue Light.")
