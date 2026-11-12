@@ -1,64 +1,62 @@
-import time
+import asyncio
 
-from .message import MessageType
-
-
-TIME_TO_SLEEP = 0.5
+from iot.message import Message, MessageType
 
 
-# of course this code looks dumb, but imagine some real implementations of each method here
 class HueLightDevice:
-    def connect(self) -> None:
-        print("Connecting Hue Light.")
-        time.sleep(TIME_TO_SLEEP)
-        print("Hue Light connected.")
+    def __init__(self) -> None:
+        self.is_on = False
 
-    def disconnect(self) -> None:
-        print("Disconnecting Hue Light.")
-        time.sleep(TIME_TO_SLEEP)
-        print("Hue Light disconnected.")
+    async def connect(self) -> None:
+        await asyncio.sleep(0.1)
 
-    def send_message(self, message_type: MessageType, data: str = "") -> None:
-        print(
-            f"Hue Light handling message of type {message_type.name} with data [{data}]."
-        )
-        time.sleep(TIME_TO_SLEEP)
-        print("Hue Light received message.")
+    async def disconnect(self) -> None:
+        await asyncio.sleep(0.1)
+
+    async def send_message(self, message: Message) -> None:
+        if message.message_type == MessageType.SWITCH_ON:
+            self.is_on = True
+        elif message.message_type == MessageType.SWITCH_OFF:
+            self.is_on = False
+
+        await asyncio.sleep(0.1)
 
 
 class SmartSpeakerDevice:
-    def connect(self) -> None:
-        print("Connecting to Smart Speaker.")
-        time.sleep(TIME_TO_SLEEP)
-        print("Smart Speaker connected.")
+    def __init__(self) -> None:
+        self.is_on = False
 
-    def disconnect(self) -> None:
-        print("Disconnecting Smart Speaker.")
-        time.sleep(TIME_TO_SLEEP)
-        print("Smart Speaker disconnected.")
+    async def connect(self) -> None:
+        await asyncio.sleep(0.1)
 
-    def send_message(self, message_type: MessageType, data: str = "") -> None:
-        print(
-            f"Smart Speaker handling message of type {message_type.name} with data [{data}]."
-        )
-        time.sleep(TIME_TO_SLEEP)
-        print("Smart Speaker received message.")
+    async def disconnect(self) -> None:
+        await asyncio.sleep(0.1)
+
+    async def send_message(self, message: Message) -> None:
+        if message.message_type == MessageType.SWITCH_ON:
+            self.is_on = True
+        elif message.message_type == MessageType.SWITCH_OFF:
+            self.is_on = False
+        elif message.message_type == MessageType.PLAY_SONG:
+            await asyncio.sleep(0.1)
+
+        await asyncio.sleep(0.1)
 
 
 class SmartToiletDevice:
-    def connect(self) -> None:
-        print("Connecting to Smart Toilet.")
-        time.sleep(TIME_TO_SLEEP)
-        print("Smart Toilet connected.")
+    def __init__(self) -> None:
+        self.is_on = False
 
-    def disconnect(self) -> None:
-        print("Disconnecting Smart Toilet.")
-        time.sleep(TIME_TO_SLEEP)
-        print("Smart Toilet disconnected.")
+    async def connect(self) -> None:
+        await asyncio.sleep(0.1)
 
-    def send_message(self, message_type: MessageType, data: str = "") -> None:
-        print(
-            f"Smart Toilet handling message of type {message_type.name} with data [{data}]."
-        )
-        time.sleep(TIME_TO_SLEEP)
-        print("Smart Toilet received message.")
+    async def disconnect(self) -> None:
+        await asyncio.sleep(0.1)
+
+    async def send_message(self, message: Message) -> None:
+        if message.message_type == MessageType.FLUSH:
+            await asyncio.sleep(0.1)
+        elif message.message_type == MessageType.CLEAN:
+            await asyncio.sleep(0.1)
+
+        await asyncio.sleep(0.1)
