@@ -16,6 +16,10 @@ async def run_sequence(*functions: Awaitable[Any]) -> None:
 async def run_parallel(*functions: Awaitable[Any]) -> None:
     await asyncio.gather(*functions)
 
+async def run_with_banners(program: Awaitable[Any]) -> None:
+    print("=====RUNNING PROGRAM======")
+    await program
+    print("=====END OF PROGRAM======")
 
 async def main() -> None:
     # create an IOT service
@@ -31,31 +35,35 @@ async def main() -> None:
         service.register_device(toilet),
     )
 
-    await run_parallel(
-        service.send_msg(
-            Message(hue_light_id, MessageType.SWITCH_ON),
-        ),
-        run_sequence(
+    await run_with_banners(
+        run_parallel(
             service.send_msg(
-                Message(speaker_id, MessageType.SWITCH_ON),
+                Message(hue_light_id, MessageType.SWITCH_ON),
             ),
-            service.send_msg(
-                Message(
-                    speaker_id,
-                    MessageType.PLAY_SONG,
-                    "Rick Astley - Never Gonna Give You Up"
+            run_sequence(
+                service.send_msg(
+                    Message(speaker_id, MessageType.SWITCH_ON),
+                ),
+                service.send_msg(
+                    Message(
+                        speaker_id,
+                        MessageType.PLAY_SONG,
+                        "Rick Astley - Never Gonna Give You Up"
+                    ),
                 ),
             ),
-        ),
 
+        )
     )
 
-    await run_parallel(
-        service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
-        service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
-        run_sequence(
-            service.send_msg(Message(toilet_id, MessageType.FLUSH)),
-            service.send_msg(Message(toilet_id, MessageType.CLEAN)),
+    await run_with_banners(
+        run_parallel(
+            service.send_msg(Message(hue_light_id, MessageType.SWITCH_OFF)),
+            service.send_msg(Message(speaker_id, MessageType.SWITCH_OFF)),
+            run_sequence(
+                service.send_msg(Message(toilet_id, MessageType.FLUSH)),
+                service.send_msg(Message(toilet_id, MessageType.CLEAN)),
+            )
         )
     )
 
