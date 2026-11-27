@@ -16,10 +16,12 @@ async def run_sequence(*functions: Awaitable[Any]) -> None:
 async def run_parallel(*functions: Awaitable[Any]) -> None:
     await asyncio.gather(*functions)
 
+
 async def run_with_banners(program: Awaitable[Any]) -> None:
     print("=====RUNNING PROGRAM======")
     await program
     print("=====END OF PROGRAM======")
+
 
 async def main() -> None:
     # create an IOT service
